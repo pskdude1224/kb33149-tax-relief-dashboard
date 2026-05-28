@@ -86,6 +86,16 @@
   .chip:hover { border-color: var(--accent); color: var(--ink); }
   .chip.on { background: linear-gradient(100deg, rgba(70,166,255,.22), rgba(45,212,191,.22)); border-color: rgba(45,212,191,.6); color: var(--ink); }
   .scn-name { font-size: 13px; color: var(--amber); margin-top: 9px; min-height: 18px; }
+  /* highlighted primary control: New Homestead Exemption */
+  .ctl-exempt { border: 1px solid rgba(239,107,107,.55);
+    box-shadow: 0 0 24px rgba(239,107,107,.22), 0 18px 44px rgba(0,0,0,.34);
+    animation: exGlow 3.4s ease-in-out infinite; }
+  @keyframes exGlow {
+    0%, 100% { border-color: rgba(239,107,107,.4); box-shadow: 0 0 16px rgba(239,107,107,.16), 0 18px 44px rgba(0,0,0,.34); }
+    50%      { border-color: rgba(239,107,107,.9); box-shadow: 0 0 36px rgba(239,107,107,.42), 0 18px 44px rgba(0,0,0,.34); }
+  }
+  .ctl-exempt label { color: #ffc7c7; }
+  @media (prefers-reduced-motion: reduce) { .ctl-exempt { animation: none; } }
 
   /* KPIs */
   .kpis { margin-top: 16px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
@@ -107,14 +117,33 @@
   .bar .top { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
   .bar .top .lab { color: var(--ink); }
   .bar .top .val { color: var(--mut); }
-  .track { height: 26px; background: var(--panel2); border-radius: 6px; overflow: hidden; display: flex; }
-  .track .keep { background: linear-gradient(90deg,#3a7bd0,#2dd4bf); height: 100%; }
-  .track .lose { background: repeating-linear-gradient(45deg,#ef6b6b,#ef6b6b 6px,#d85a5a 6px,#d85a5a 12px); height: 100%; }
-  .bar.current .track { outline: 2px solid var(--amber); outline-offset: 1px; }
+  .track { height: 26px; background: var(--panel2); border-radius: 6px; overflow: hidden; display: flex;
+    box-shadow: 0 0 16px rgba(45,212,191,.16), inset 0 0 0 1px rgba(255,255,255,.04); }
+  .track .keep { position: relative; overflow: hidden; height: 100%;
+    background: linear-gradient(90deg,#3a7bd0,#2dd4bf); box-shadow: 0 0 12px rgba(45,212,191,.55); }
+  .track .keep::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 100%;
+    background: linear-gradient(100deg, transparent 25%, rgba(255,255,255,.42) 50%, transparent 75%);
+    transform: translateX(-100%); animation: sheen 2.8s ease-in-out infinite; }
+  .track .lose { height: 100%;
+    background: repeating-linear-gradient(45deg,#ef6b6b,#ef6b6b 6px,#d85a5a 6px,#d85a5a 12px);
+    animation: barber 1s linear infinite; }
+  @keyframes sheen { 0% { transform: translateX(-100%); } 55%, 100% { transform: translateX(100%); } }
+  @keyframes barber { from { background-position: 0 0; } to { background-position: 16.97px 0; } }
+  .bar.current .track { outline: 2px solid var(--amber); outline-offset: 1px; box-shadow: 0 0 18px rgba(242,182,90,.35); }
 
   /* split */
-  .split-bar { height: 30px; border-radius: 6px; overflow: hidden; display: flex; margin: 8px 0 14px; }
-  .split-bar .hs { background: var(--homestead); } .split-bar .nh { background: var(--nonhs); }
+  .split-bar { height: 30px; border-radius: 6px; overflow: hidden; display: flex; margin: 8px 0 14px;
+    box-shadow: 0 0 16px rgba(70,166,255,.18), inset 0 0 0 1px rgba(255,255,255,.04); }
+  .split-bar .hs { position: relative; overflow: hidden; background: linear-gradient(90deg,#3a7bd0,#46a6ff);
+    box-shadow: 0 0 12px rgba(70,166,255,.5); }
+  .split-bar .hs::after { content: ""; position: absolute; inset: 0;
+    background: linear-gradient(100deg, transparent 25%, rgba(255,255,255,.34) 50%, transparent 75%);
+    transform: translateX(-100%); animation: sheen 3.4s ease-in-out infinite; }
+  .split-bar .nh { background: linear-gradient(90deg,#54637a,#5c6b7e); }
+  @media (prefers-reduced-motion: reduce) {
+    .track .keep::after, .split-bar .hs::after { animation: none; }
+    .track .lose { animation: none; }
+  }
   .legend { display: flex; gap: 16px; font-size: 12px; color: var(--mut); }
   .legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
   .splitnote { font-size: 12px; color: var(--mut2); margin-top: 10px; }
@@ -235,6 +264,21 @@
 
   <!-- CONTROLS -->
   <div class="controls">
+    <div class="card ctl ctl-exempt">
+      <label>New homestead exemption</label>
+      <div class="row">
+        <input type="range" id="exRange" min="0" max="2000000" step="25000" value="250000" />
+        <input type="number" id="exNum" min="0" max="5000000" step="25000" value="250000" />
+      </div>
+      <div class="presets">
+        <span class="chip" data-ex="100000">$100K</span>
+        <span class="chip" data-ex="250000">$250K</span>
+        <span class="chip" data-ex="500000">$500K</span>
+        <span class="chip" id="fullElim" data-full="1">Full elimination</span>
+      </div>
+      <div class="scn-name" id="scnName"></div>
+    </div>
+
     <div class="card ctl">
       <label>Geography</label>
       <select id="geo">
@@ -256,21 +300,6 @@
         <span class="chip" data-mil="15.6226">Combined 15.6226</span>
         <span class="chip" data-mil="2.9794">Village only 2.9794</span>
       </div>
-    </div>
-
-    <div class="card ctl">
-      <label>New homestead exemption</label>
-      <div class="row">
-        <input type="range" id="exRange" min="0" max="2000000" step="25000" value="250000" />
-        <input type="number" id="exNum" min="0" max="5000000" step="25000" value="250000" />
-      </div>
-      <div class="presets">
-        <span class="chip" data-ex="100000">$100K</span>
-        <span class="chip" data-ex="250000">$250K</span>
-        <span class="chip" data-ex="500000">$500K</span>
-        <span class="chip" id="fullElim" data-full="1">Full elimination</span>
-      </div>
-      <div class="scn-name" id="scnName"></div>
     </div>
   </div>
 
@@ -508,12 +537,13 @@ function renderHome() {
 function renderChart(rows, cur) {
   const defs = [
     { lab: "Baseline (current)", ex: 0, full: false },
+    { lab: "$100K homestead exemption", ex: 100000, full: false },
     { lab: "$250K homestead exemption", ex: 250000, full: false },
     { lab: "$500K homestead exemption", ex: 500000, full: false },
     { lab: "Full elimination (homestead)", ex: 0, full: true },
   ];
   // current custom scenario (only show if not exactly a preset)
-  const isPreset = !st.full && (st.exemption === 250000 || st.exemption === 500000);
+  const isPreset = !st.full && (st.exemption === 100000 || st.exemption === 250000 || st.exemption === 500000);
   const items = defs.map(d => ({ ...d, ...aggregate(rows, st.millage, d.ex, d.full) }));
   let currentItem = null;
   if (!isPreset) {
