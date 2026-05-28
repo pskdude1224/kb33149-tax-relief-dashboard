@@ -106,6 +106,9 @@
     50%      { border-color: rgba(239,107,107,.9); box-shadow: 0 0 36px rgba(239,107,107,.42), 0 18px 44px rgba(0,0,0,.34); }
   }
   .ctl-exempt label { color: #ffc7c7; }
+  /* larger, prominent exemption preset buttons (2x2 grid) */
+  .ctl-exempt .presets { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .ctl-exempt .chip { padding: 13px 10px; font-size: 15px; font-weight: 700; border-radius: 12px; text-align: center; }
   @media (prefers-reduced-motion: reduce) { .ctl-exempt { animation: none; } }
 
   /* KPIs */
