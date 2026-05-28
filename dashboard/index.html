@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Key Biscayne (33149) — Property Tax Relief Impact</title>
+<style>
+  :root {
+    --bg: #0e1116; --panel: #171c24; --panel2: #1f2630; --line: #2b3441;
+    --ink: #e8edf4; --mut: #93a1b3; --mut2: #6b7889;
+    --accent: #4aa3ff; --green: #46c08a; --red: #ef6b6b; --amber: #f2b65a;
+    --homestead: #4aa3ff; --nonhs: #6b7889;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  a { color: var(--accent); }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 22px 22px 80px; }
+  header h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: .2px; }
+  header .sub { color: var(--mut); font-size: 13px; }
+  .badges { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge { background: var(--panel2); border: 1px solid var(--line); color: var(--mut);
+    padding: 3px 10px; border-radius: 999px; font-size: 12px; }
+  .badge b { color: var(--ink); font-weight: 600; }
+
+  details.assume { margin: 14px 0 0; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+  details.assume summary { cursor: pointer; padding: 11px 14px; color: var(--mut); font-size: 13px; }
+  details.assume .body { padding: 0 16px 14px; color: var(--mut); font-size: 13px; }
+  details.assume li { margin: 4px 0; }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .grid { display: grid; gap: 14px; }
+
+  /* controls */
+  .controls { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .ctl label { display: block; font-size: 12px; color: var(--mut); text-transform: uppercase;
+    letter-spacing: .5px; margin-bottom: 8px; }
+  .ctl .row { display: flex; align-items: center; gap: 10px; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  input[type=number], select {
+    background: var(--panel2); color: var(--ink); border: 1px solid var(--line);
+    border-radius: 8px; padding: 7px 9px; font-size: 14px; width: 120px;
+  }
+  select { width: 100%; }
+  .presets { display: flex; gap: 6px; margin-top: 9px; flex-wrap: wrap; }
+  .chip { background: var(--panel2); border: 1px solid var(--line); color: var(--mut);
+    border-radius: 999px; padding: 4px 11px; font-size: 12px; cursor: pointer; }
+  .chip:hover { border-color: var(--accent); color: var(--ink); }
+  .chip.on { background: rgba(74,163,255,.16); border-color: var(--accent); color: var(--ink); }
+  .scn-name { font-size: 13px; color: var(--amber); margin-top: 9px; min-height: 18px; }
+
+  /* KPIs */
+  .kpis { margin-top: 16px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+  .kpi .k { font-size: 11px; color: var(--mut); text-transform: uppercase; letter-spacing: .5px; }
+  .kpi .v { font-size: 24px; font-weight: 700; margin-top: 6px; }
+  .kpi .s { font-size: 12px; color: var(--mut2); margin-top: 3px; }
+  .kpi.lost .v { color: var(--red); }
+  .kpi.free .v { color: var(--amber); }
+
+  .two { margin-top: 16px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; }
+  h3 { margin: 0 0 14px; font-size: 14px; }
+  h3 .mut { color: var(--mut); font-weight: 400; }
+
+  /* bar chart */
+  .bar { margin-bottom: 14px; }
+  .bar .top { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+  .bar .top .lab { color: var(--ink); }
+  .bar .top .val { color: var(--mut); }
+  .track { height: 26px; background: var(--panel2); border-radius: 6px; overflow: hidden; display: flex; }
+  .track .keep { background: linear-gradient(90deg,#3a7bd0,#46c08a); height: 100%; }
+  .track .lose { background: repeating-linear-gradient(45deg,#ef6b6b,#ef6b6b 6px,#d85a5a 6px,#d85a5a 12px); height: 100%; }
+  .bar.current .track { outline: 2px solid var(--amber); outline-offset: 1px; }
+
+  /* split */
+  .split-bar { height: 30px; border-radius: 6px; overflow: hidden; display: flex; margin: 8px 0 14px; }
+  .split-bar .hs { background: var(--homestead); } .split-bar .nh { background: var(--nonhs); }
+  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--mut); }
+  .legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
+  .splitnote { font-size: 12px; color: var(--mut2); margin-top: 10px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--mut); font-weight: 600; cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--panel); }
+  tbody tr:hover { background: var(--panel2); }
+  .num { font-variant-numeric: tabular-nums; }
+  .pill { font-size: 11px; padding: 1px 8px; border-radius: 999px; }
+  .pill.hs { background: rgba(74,163,255,.16); color: #9cc9ff; }
+  .pill.nh { background: rgba(107,120,137,.18); color: var(--mut); }
+  .lost-num { color: var(--red); }
+
+  .tablebar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .tablebar input[type=text] { width: 240px; }
+  .scroll { max-height: 540px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; }
+  .pager { display: flex; gap: 10px; align-items: center; justify-content: flex-end; margin-top: 10px; color: var(--mut); font-size: 13px; }
+  .pager button { background: var(--panel2); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; cursor: pointer; }
+  .pager button:disabled { opacity: .4; cursor: default; }
+  .sec-title { margin: 26px 0 0; font-size: 16px; }
+  @media (max-width: 900px) {
+    .controls, .kpis, .two { grid-template-columns: 1fr; }
+    .kpis { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Key Biscayne · ZIP 33149 — Property Tax Relief Impact</h1>
+    <div class="sub">Modeling Florida's proposed homestead exemption (“Save Our Homes from Excessive Property Taxes”) against the local tax base.</div>
+    <div class="badges" id="badges"></div>
+  </header>
+
+  <details class="assume">
+    <summary>Data sources &amp; modeling assumptions (read me)</summary>
+    <div class="body">
+      <ul>
+        <li><b>Parcel universe:</b> all ZIP 33149 folios from Miami-Dade County's live ArcGIS “Property @ PaGis” layer. (The UM GDSC mirror in the brief is dead — its query backend 400s on every request — so we use the county's own equivalent layer.)</li>
+        <li><b>Values &amp; exemptions:</b> per-folio from the Miami-Dade Property Appraiser public roll API (certified <b id="rollyr2">2025</b> roll). The GIS layers carry <i>no</i> exemption flag or taxable value — this API is the source for both.</li>
+        <li><b>Taxable base used:</b> the <b>non-school local taxable value</b> (county/municipal taxable, after current exemptions). This is the base the Village of Key Biscayne + Miami-Dade county millage levy on. School taxable differs slightly (the extra $25K homestead exemption doesn't apply to schools) and is excluded from this model's base.</li>
+        <li><b>The bill:</b> exempts the first $250K (then $500K, then all) of a <b>homestead's</b> value from taxation. Modeled as: reduce each homestead's taxable value by the exemption (floor $0); non-homestead residential &amp; commercial are <b>unchanged</b> in every scenario.</li>
+        <li><b>Millage default 15.6226 mills</b> = combined Village + County + School + special districts (2025). Village-of-KB-only operating millage is 2.9794. Both editable below.</li>
+        <li><b>Validation:</b> summed Key-Biscayne-municipality taxable ≈ <span id="valnote"></span>, vs the published $11.6B record base — a close match.</li>
+      </ul>
+    </div>
+  </details>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="card ctl">
+      <label>Geography</label>
+      <select id="geo">
+        <option value="all">All ZIP 33149</option>
+        <option value="kb">Village of Key Biscayne only</option>
+        <option value="miami">City of Miami (Virginia Key) only</option>
+        <option value="uninc">Unincorporated County only</option>
+      </select>
+      <div class="presets" id="geoCount"></div>
+    </div>
+
+    <div class="card ctl">
+      <label>Combined millage rate (mills)</label>
+      <div class="row">
+        <input type="range" id="milRange" min="0" max="25" step="0.0001" value="15.6226" />
+        <input type="number" id="milNum" min="0" max="40" step="0.0001" value="15.6226" />
+      </div>
+      <div class="presets">
+        <span class="chip" data-mil="15.6226">Combined 15.6226</span>
+        <span class="chip" data-mil="2.9794">Village only 2.9794</span>
+      </div>
+    </div>
+
+    <div class="card ctl">
+      <label>New homestead exemption</label>
+      <div class="row">
+        <input type="range" id="exRange" min="0" max="2000000" step="25000" value="250000" />
+        <input type="number" id="exNum" min="0" max="5000000" step="25000" value="250000" />
+      </div>
+      <div class="presets">
+        <span class="chip" data-ex="250000">$250K</span>
+        <span class="chip" data-ex="500000">$500K</span>
+        <span class="chip" id="fullElim" data-full="1">Full elimination</span>
+      </div>
+      <div class="scn-name" id="scnName"></div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpis" id="kpis"></div>
+
+  <!-- CHARTS -->
+  <div class="two">
+    <div class="card">
+      <h3>Scenario comparison <span class="mut">— local revenue retained vs lost, at current millage &amp; geography</span></h3>
+      <div id="chart"></div>
+      <div class="legend" style="margin-top:6px">
+        <span><span class="dot" style="background:linear-gradient(90deg,#3a7bd0,#46c08a)"></span>Revenue retained</span>
+        <span><span class="dot" style="background:#ef6b6b"></span>Revenue lost</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Homestead vs non-homestead <span class="mut">— share of taxable base</span></h3>
+      <div id="split"></div>
+    </div>
+  </div>
+
+  <!-- PROPERTY TYPE TABLE -->
+  <h3 class="sec-title">Breakdown by property type</h3>
+  <div class="card" style="margin-top:12px">
+    <div class="scroll" style="max-height:none">
+      <table id="classTable"></table>
+    </div>
+  </div>
+
+  <!-- PARCEL TABLE -->
+  <h3 class="sec-title">Parcel-level detail</h3>
+  <div class="card" style="margin-top:12px">
+    <div class="tablebar">
+      <input type="text" id="search" placeholder="Search folio or address…" />
+      <select id="fCls" style="width:auto"><option value="">All property types</option></select>
+      <select id="fHs" style="width:auto">
+        <option value="">Homestead &amp; non</option>
+        <option value="1">Homestead only</option>
+        <option value="0">Non-homestead only</option>
+      </select>
+      <span class="badge" id="rowCount"></span>
+    </div>
+    <div class="scroll">
+      <table id="parcelTable"></table>
+    </div>
+    <div class="pager">
+      <span id="pageInfo"></span>
+      <button id="prev">‹ Prev</button>
+      <button id="next">Next ›</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+const P = window.__PARCELS__ || [];
+const S = window.__SUMMARY__ || {};
+const D = S.defaults || { millage: 15.6226, village_only_millage: 2.9794 };
+
+// ---------- formatting ----------
+const f0 = (n) => Math.round(n).toLocaleString();
+const fUSD = (n) => "$" + f0(n);
+const fAbbr = (n) => {
+  const a = Math.abs(n);
+  if (a >= 1e9) return "$" + (n / 1e9).toFixed(2) + "B";
+  if (a >= 1e6) return "$" + (n / 1e6).toFixed(1) + "M";
+  if (a >= 1e3) return "$" + (n / 1e3).toFixed(0) + "K";
+  return "$" + f0(n);
+};
+const fPct = (x) => (x * 100).toFixed(1) + "%";
+
+// ---------- state ----------
+const st = { geo: "all", millage: D.millage, exemption: 250000, full: false,
+             search: "", fCls: "", fHs: "", sort: "taxable", dir: -1, page: 0, per: 100 };
+
+// ---------- geography filter ----------
+function geoMatch(r) {
+  const m = (r.muni || "").toLowerCase();
+  if (st.geo === "kb") return m.includes("key biscayne");
+  if (st.geo === "miami") return m === "miami";
+  if (st.geo === "uninc") return m.includes("unincorporated");
+  return true;
+}
+function activeParcels() { return P.filter(geoMatch); }
+
+// ---------- scenario engine (mirrors pipeline/03_build_model.mjs) ----------
+const taxOf = (taxable, mil) => taxable * (mil / 1000);
+function scnTax(r, mil, ex, full) {
+  if (!r.homestead) return taxOf(r.taxable, mil);
+  if (full) return 0;
+  return taxOf(Math.max(0, r.taxable - ex), mil);
+}
+// aggregate a parcel set under (mil, ex, full); returns {rev, base, lost, pct, free, hsBase, nhBase}
+function aggregate(rows, mil, ex, full) {
+  let rev = 0, base = 0, free = 0, hsBase = 0, nhBase = 0;
+  for (const r of rows) {
+    const b = taxOf(r.taxable, mil); base += b;
+    rev += scnTax(r, mil, ex, full);
+    if (r.homestead) { hsBase += r.taxable; if (scnTax(r, mil, ex, full) === 0 && r.taxable > 0) free++; }
+    else nhBase += r.taxable;
+  }
+  return { rev, base, lost: base - rev, pct: base > 0 ? (base - rev) / base : 0, free, hsBase, nhBase };
+}
+
+// ---------- render ----------
+function render() {
+  const rows = activeParcels();
+  const cur = aggregate(rows, st.millage, st.full ? 0 : st.exemption, st.full);
+
+  // scenario name
+  document.getElementById("scnName").textContent = st.full
+    ? "Scenario: full homestead elimination"
+    : "Scenario: " + fAbbr(st.exemption) + " homestead exemption";
+
+  // KPIs
+  const hsCount = rows.filter(r => r.homestead).length;
+  document.getElementById("kpis").innerHTML = [
+    kpi("Baseline local revenue", fAbbr(cur.base), fUSD(cur.base), ""),
+    kpi("Revenue under scenario", fAbbr(cur.rev), fUSD(cur.rev), ""),
+    kpi("Revenue lost", fAbbr(cur.lost), fPct(cur.pct) + " of base", "lost"),
+    kpi("Homesteads fully tax-free", f0(cur.free), "of " + f0(hsCount) + " homesteads", "free"),
+    kpi("Homestead share of base", fPct(cur.hsBase / (cur.hsBase + cur.nhBase || 1)), fAbbr(cur.hsBase), ""),
+  ].join("");
+
+  renderChart(rows, cur);
+  renderSplit(cur);
+  renderClassTable(rows);
+  renderParcels(rows);
+  document.getElementById("geoCount").innerHTML =
+    '<span class="badge"><b>' + f0(rows.length) + '</b> parcels in view</span>';
+}
+function kpi(k, v, s, cls) {
+  return `<div class="kpi ${cls||''}"><div class="k">${k}</div><div class="v num">${v}</div><div class="s">${s}</div></div>`;
+}
+
+function renderChart(rows, cur) {
+  const defs = [
+    { lab: "Baseline (current)", ex: 0, full: false },
+    { lab: "$250K homestead exemption", ex: 250000, full: false },
+    { lab: "$500K homestead exemption", ex: 500000, full: false },
+    { lab: "Full elimination (homestead)", ex: 0, full: true },
+  ];
+  // current custom scenario (only show if not exactly a preset)
+  const isPreset = !st.full && (st.exemption === 250000 || st.exemption === 500000);
+  const items = defs.map(d => ({ ...d, ...aggregate(rows, st.millage, d.ex, d.full) }));
+  let currentItem = null;
+  if (!isPreset) {
+    currentItem = { lab: (st.full ? "Full elimination" : fAbbr(st.exemption) + " exemption") + " · current", current: true, ...cur };
+  }
+  const all = currentItem ? [...items.slice(0,1), currentItem, ...items.slice(1)] : items;
+  const max = items[0].base || 1;
+  document.getElementById("chart").innerHTML = all.map(it => {
+    const keepPct = (it.rev / max) * 100, losePct = (it.lost / max) * 100;
+    return `<div class="bar ${it.current ? 'current' : ''}">
+      <div class="top"><span class="lab">${it.lab}</span>
+        <span class="val">retain ${fAbbr(it.rev)} · <span class="lost-num">lose ${fAbbr(it.lost)}</span> (${fPct(it.pct)})</span></div>
+      <div class="track"><div class="keep" style="width:${keepPct}%"></div><div class="lose" style="width:${losePct}%"></div></div>
+    </div>`;
+  }).join("");
+}
+
+function renderSplit(cur) {
+  const total = cur.hsBase + cur.nhBase || 1;
+  const hsP = (cur.hsBase / total) * 100;
+  document.getElementById("split").innerHTML = `
+    <div class="split-bar">
+      <div class="hs" style="width:${hsP}%"></div>
+      <div class="nh" style="width:${100 - hsP}%"></div>
+    </div>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--homestead)"></span>Homestead ${fPct(cur.hsBase/total)} · ${fAbbr(cur.hsBase)}</span>
+      <span><span class="dot" style="background:var(--nonhs)"></span>Non-homestead ${fPct(cur.nhBase/total)} · ${fAbbr(cur.nhBase)}</span>
+    </div>
+    <div class="splitnote">Only the homestead slice is touched by the bill. Non-homestead residential and all commercial
+    property (${fAbbr(cur.nhBase)} of base) keep paying in full under every scenario — which is why the local revenue
+    floor never drops below their share.</div>`;
+}
+
+function renderClassTable(rows) {
+  const ex = st.full ? 0 : st.exemption;
+  const m = {};
+  for (const r of rows) {
+    const k = r.cls; (m[k] ||= { cls: k, n: 0, hs: 0, base: 0, btax: 0, stax: 0 });
+    m[k].n++; if (r.homestead) m[k].hs++;
+    m[k].base += r.taxable;
+    m[k].btax += taxOf(r.taxable, st.millage);
+    m[k].stax += scnTax(r, st.millage, ex, st.full);
+  }
+  const arr = Object.values(m).sort((a, b) => b.base - a.base);
+  const head = `<thead><tr><th>Property type</th><th># parcels</th><th>Homesteads</th>
+    <th>Taxable base</th><th>Baseline tax</th><th>Scenario tax</th><th>Revenue lost</th><th>% lost</th></tr></thead>`;
+  const body = arr.map(x => {
+    const lost = x.btax - x.stax, pct = x.btax > 0 ? lost / x.btax : 0;
+    return `<tr><td>${x.cls}</td><td class="num">${f0(x.n)}</td><td class="num">${f0(x.hs)}</td>
+      <td class="num">${fAbbr(x.base)}</td><td class="num">${fAbbr(x.btax)}</td><td class="num">${fAbbr(x.stax)}</td>
+      <td class="num lost-num">${lost > 0 ? fAbbr(lost) : "—"}</td><td class="num">${lost > 0 ? fPct(pct) : "—"}</td></tr>`;
+  }).join("");
+  document.getElementById("classTable").innerHTML = head + "<tbody>" + body + "</tbody>";
+}
+
+// ---------- parcel table ----------
+function filteredParcels() {
+  const ex = st.full ? 0 : st.exemption;
+  const q = st.search.trim().toLowerCase();
+  let rows = activeParcels().filter(r => {
+    if (st.fCls && r.cls !== st.fCls) return false;
+    if (st.fHs !== "" && String(r.homestead) !== st.fHs) return false;
+    if (q && !(r.folio.includes(q) || (r.addr || "").toLowerCase().includes(q))) return false;
+    return true;
+  }).map(r => {
+    const btax = taxOf(r.taxable, st.millage);
+    const stax = scnTax(r, st.millage, ex, st.full);
+    return { ...r, btax, stax, change: stax - btax };
+  });
+  const key = st.sort;
+  rows.sort((a, b) => {
+    let av = a[key], bv = b[key];
+    if (typeof av === "string") { av = av || ""; bv = bv || ""; return st.dir * av.localeCompare(bv); }
+    return st.dir * ((av || 0) - (bv || 0));
+  });
+  return rows;
+}
+function renderParcels(_rows) {
+  const rows = filteredParcels();
+  const pages = Math.max(1, Math.ceil(rows.length / st.per));
+  if (st.page >= pages) st.page = pages - 1;
+  const slice = rows.slice(st.page * st.per, st.page * st.per + st.per);
+  const cols = [
+    ["folio", "Folio"], ["addr", "Address"], ["cls", "Type"], ["homestead", "HS"],
+    ["taxable", "Taxable base"], ["assessedVal", "Assessed"], ["btax", "Baseline tax"],
+    ["stax", "Scenario tax"], ["change", "Change"],
+  ];
+  const head = "<thead><tr>" + cols.map(([k, l]) =>
+    `<th data-k="${k}">${l}${st.sort === k ? (st.dir < 0 ? " ▾" : " ▴") : ""}</th>`).join("") + "</tr></thead>";
+  const body = slice.map(r => `<tr>
+    <td class="num">${r.folio}</td>
+    <td>${r.addr || '<span style="color:var(--mut2)">—</span>'}</td>
+    <td>${r.cls}</td>
+    <td>${r.homestead ? '<span class="pill hs">HS</span>' : '<span class="pill nh">—</span>'}</td>
+    <td class="num">${fUSD(r.taxable)}</td>
+    <td class="num">${fUSD(r.assessedVal)}</td>
+    <td class="num">${fUSD(r.btax)}</td>
+    <td class="num">${fUSD(r.stax)}</td>
+    <td class="num ${r.change < 0 ? 'lost-num' : ''}">${r.change < 0 ? "−" + fUSD(-r.change) : "$0"}</td>
+  </tr>`).join("");
+  document.getElementById("parcelTable").innerHTML = head + "<tbody>" + body + "</tbody>";
+  document.getElementById("rowCount").innerHTML = "<b>" + f0(rows.length) + "</b> parcels match";
+  document.getElementById("pageInfo").textContent = `Page ${st.page + 1} / ${pages} · showing ${slice.length} of ${f0(rows.length)}`;
+  document.getElementById("prev").disabled = st.page === 0;
+  document.getElementById("next").disabled = st.page >= pages - 1;
+  document.querySelectorAll("#parcelTable th").forEach(th => th.onclick = () => {
+    const k = th.dataset.k;
+    if (st.sort === k) st.dir *= -1; else { st.sort = k; st.dir = -1; }
+    renderParcels();
+  });
+}
+
+// ---------- wiring ----------
+function syncEx() {
+  document.querySelectorAll("[data-ex]").forEach(c => c.classList.toggle("on", !st.full && +c.dataset.ex === st.exemption));
+  document.getElementById("fullElim").classList.toggle("on", st.full);
+  document.getElementById("exRange").disabled = st.full;
+  document.getElementById("exNum").disabled = st.full;
+}
+function syncMil() {
+  document.querySelectorAll("[data-mil]").forEach(c => c.classList.toggle("on", Math.abs(+c.dataset.mil - st.millage) < 1e-6));
+}
+document.getElementById("geo").onchange = e => { st.geo = e.target.value; st.page = 0; render(); };
+document.getElementById("milRange").oninput = e => { st.millage = +e.target.value; document.getElementById("milNum").value = st.millage; syncMil(); render(); };
+document.getElementById("milNum").oninput = e => { st.millage = +e.target.value || 0; document.getElementById("milRange").value = st.millage; syncMil(); render(); };
+document.querySelectorAll("[data-mil]").forEach(c => c.onclick = () => {
+  st.millage = +c.dataset.mil; document.getElementById("milRange").value = st.millage; document.getElementById("milNum").value = st.millage; syncMil(); render();
+});
+document.getElementById("exRange").oninput = e => { st.full = false; st.exemption = +e.target.value; document.getElementById("exNum").value = st.exemption; syncEx(); render(); };
+document.getElementById("exNum").oninput = e => { st.full = false; st.exemption = +e.target.value || 0; document.getElementById("exRange").value = Math.min(st.exemption, 2000000); syncEx(); render(); };
+document.querySelectorAll("[data-ex]").forEach(c => c.onclick = () => {
+  st.full = false; st.exemption = +c.dataset.ex; document.getElementById("exRange").value = st.exemption; document.getElementById("exNum").value = st.exemption; syncEx(); render();
+});
+document.getElementById("fullElim").onclick = () => { st.full = !st.full; syncEx(); render(); };
+document.getElementById("search").oninput = e => { st.search = e.target.value; st.page = 0; renderParcels(); };
+document.getElementById("fCls").onchange = e => { st.fCls = e.target.value; st.page = 0; renderParcels(); };
+document.getElementById("fHs").onchange = e => { st.fHs = e.target.value; st.page = 0; renderParcels(); };
+document.getElementById("prev").onclick = () => { if (st.page > 0) { st.page--; renderParcels(); } };
+document.getElementById("next").onclick = () => { st.page++; renderParcels(); };
+
+// ---------- init ----------
+(function init() {
+  // badges
+  const c = S.counts || {};
+  document.getElementById("badges").innerHTML = [
+    `<span class="badge">Roll year <b>${S.roll_year || "—"}</b></span>`,
+    `<span class="badge"><b>${f0(c.parcels || P.length)}</b> parcels</span>`,
+    `<span class="badge"><b>${f0(c.homestead || 0)}</b> homesteads</span>`,
+    `<span class="badge">Source <b>Miami-Dade PA roll API</b></span>`,
+    `<span class="badge">Built <b>${(S.generated_at || "").slice(0, 10)}</b></span>`,
+  ].join("");
+  if (S.roll_year) document.getElementById("rollyr2").textContent = S.roll_year;
+  if (S.validation) document.getElementById("valnote").textContent = fAbbr(S.validation.computed_kb_taxable);
+
+  // property-type filter options
+  const classes = [...new Set(P.map(r => r.cls))].sort();
+  document.getElementById("fCls").insertAdjacentHTML("beforeend",
+    classes.map(c => `<option value="${c}">${c}</option>`).join(""));
+
+  syncMil(); syncEx(); render();
+})();
+</script>
+</body>
+</html>

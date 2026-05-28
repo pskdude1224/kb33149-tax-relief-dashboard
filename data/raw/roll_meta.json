@@ -1,0 +1,18 @@
+{
+  "fetched_at": "2026-05-28T12:31:38.695Z",
+  "source": "https://apps.miamidadepa.gov/PApublicServiceProxy/PaServicesProxy.ashx",
+  "operation": "GetPropertySearchByFolio",
+  "total_folios": 7431,
+  "captured": 7431,
+  "valid": 7431,
+  "invalid_or_failed": 0,
+  "homestead_count": 2892,
+  "roll_year_distribution": {
+    "2025": 7431
+  },
+  "municipality_distribution": {
+    "Miami": 32,
+    "Key Biscayne": 7383,
+    "Unincorporated County": 16
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "kb33149-tax-relief-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Models Florida's proposed homestead-exemption amendment against the ZIP 33149 (Key Biscayne) local tax base.",
+  "scripts": {
+    "fetch:parcels": "node pipeline/01_fetch_parcels.mjs",
+    "fetch:roll": "node pipeline/02_fetch_roll.mjs",
+    "build": "node pipeline/03_build_model.mjs",
+    "pipeline": "node pipeline/01_fetch_parcels.mjs && node pipeline/02_fetch_roll.mjs && node pipeline/03_build_model.mjs",
+    "refresh": "node pipeline/02_fetch_roll.mjs --fresh && node pipeline/03_build_model.mjs",
+    "serve": "node serve.mjs"
+  },
+  "engines": { "node": ">=18" }
+}
