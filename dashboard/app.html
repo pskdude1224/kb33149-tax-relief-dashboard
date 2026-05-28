@@ -4,6 +4,17 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Key Biscayne (33149) — Property Tax Relief Impact</title>
+<meta name="description" content="Interactive model of how Florida's proposed homestead exemption would affect the Key Biscayne (ZIP 33149) tax base. Search your address to see your estimated change." />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<meta name="theme-color" content="#070b11" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="See Our Homes" />
+<meta property="og:url" content="https://saveour.homes/app.html" />
+<meta property="og:title" content="Key Biscayne Tax Relief — find your home" />
+<meta property="og:description" content="Search your Key Biscayne (ZIP 33149) address to see how Florida's proposed homestead exemption could change your property tax — $250K, $500K, or full elimination." />
+<meta property="og:image" content="https://saveour.homes/og.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://saveour.homes/og.jpg" />
 <style>
   :root {
     --bg: #070b11; --panel: #121822; --panel2: #1b2330; --line: #283344;
@@ -168,10 +179,11 @@
   .sec-title { margin: 26px 0 0; font-size: 16px; }
 
   /* find your home */
-  .findhome { margin-top: 18px; background: linear-gradient(180deg, rgba(70,166,255,.15), rgba(45,212,191,.06)); border: 1px solid rgba(45,212,191,.5); border-radius: 16px; padding: 20px;
+  .findhome { position: relative; z-index: 50; margin-top: 18px; background: linear-gradient(180deg, rgba(70,166,255,.15), rgba(45,212,191,.06)); border: 1px solid rgba(45,212,191,.5); border-radius: 16px; padding: 20px;
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 0 24px rgba(45,212,191,.2), 0 18px 44px rgba(0,0,0,.34);
     animation: fhGlow 3.4s ease-in-out infinite; }
+  .findhome:focus-within { z-index: 60; }
   @keyframes fhGlow {
     0%, 100% { border-color: rgba(45,212,191,.4); box-shadow: 0 0 16px rgba(45,212,191,.14), 0 18px 44px rgba(0,0,0,.34); }
     50%      { border-color: rgba(45,212,191,.85); box-shadow: 0 0 36px rgba(45,212,191,.38), 0 18px 44px rgba(0,0,0,.34); }
