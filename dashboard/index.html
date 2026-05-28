@@ -3,474 +3,297 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Key Biscayne (33149) — Property Tax Relief Impact</title>
+<title>Key Biscayne Property Tax Relief — See how it affects your home</title>
+<meta name="description" content="An independent, non-partisan tool modeling how Florida's proposed homestead property-tax exemption could affect the Key Biscayne (ZIP 33149) tax base. Built from public records by Ruben Gil." />
 <style>
   :root {
-    --bg: #0e1116; --panel: #171c24; --panel2: #1f2630; --line: #2b3441;
-    --ink: #e8edf4; --mut: #93a1b3; --mut2: #6b7889;
-    --accent: #4aa3ff; --green: #46c08a; --red: #ef6b6b; --amber: #f2b65a;
-    --homestead: #4aa3ff; --nonhs: #6b7889;
+    --bg: #070b11; --panel: #121822; --panel2: #1b2330; --line: #283344;
+    --ink: #eef3fa; --mut: #9fb0c3; --mut2: #6c7c90;
+    --blue: #46a6ff; --teal: #2dd4bf; --green: #59d39a; --red: #ef6b6b;
   }
   * { box-sizing: border-box; }
+  html, body { margin: 0; }
   body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--ink); min-height: 100vh; overflow-x: hidden;
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
-  a { color: var(--accent); }
-  .wrap { max-width: 1240px; margin: 0 auto; padding: 22px 22px 80px; }
-  header h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: .2px; }
-  header .sub { color: var(--mut); font-size: 13px; }
-  .badges { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
-  .badge { background: var(--panel2); border: 1px solid var(--line); color: var(--mut);
-    padding: 3px 10px; border-radius: 999px; font-size: 12px; }
-  .badge b { color: var(--ink); font-weight: 600; }
+  a { color: var(--blue); text-decoration: none; }
 
-  details.assume { margin: 14px 0 0; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
-  details.assume summary { cursor: pointer; padding: 11px 14px; color: var(--mut); font-size: 13px; }
-  details.assume .body { padding: 0 16px 14px; color: var(--mut); font-size: 13px; }
-  details.assume li { margin: 4px 0; }
+  /* ---- atmospheric backdrop ---- */
+  .bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .bg .glow { position: absolute; border-radius: 50%; filter: blur(80px); opacity: .55; }
+  .g1 { width: 620px; height: 620px; top: -220px; left: -120px; background: radial-gradient(circle, #1d6fd0, transparent 70%); }
+  .g2 { width: 560px; height: 560px; top: -160px; right: -120px; background: radial-gradient(circle, #1bbf9c, transparent 70%); opacity: .4; }
+  .g3 { width: 700px; height: 500px; bottom: -260px; left: 30%; background: radial-gradient(circle, #2a4d8f, transparent 70%); opacity: .35; }
+  .grid { position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size: 46px 46px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+            mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%); }
+  .wave { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; opacity: .5; }
 
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
-  .grid { display: grid; gap: 14px; }
+  /* ---- layout ---- */
+  .page { position: relative; z-index: 1; }
+  .container { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 26px; }
 
-  /* controls */
-  .controls { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-  .ctl label { display: block; font-size: 12px; color: var(--mut); text-transform: uppercase;
-    letter-spacing: .5px; margin-bottom: 8px; }
-  .ctl .row { display: flex; align-items: center; gap: 10px; }
-  input[type=range] { width: 100%; accent-color: var(--accent); }
-  input[type=number], select {
-    background: var(--panel2); color: var(--ink); border: 1px solid var(--line);
-    border-radius: 8px; padding: 7px 9px; font-size: 14px; width: 120px;
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .2px; }
+  .brand .dot { width: 11px; height: 11px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), var(--teal)); box-shadow: 0 0 14px rgba(45,212,191,.7); }
+  .brand small { color: var(--mut); font-weight: 500; }
+  .navlink { color: var(--mut); font-size: 14px; }
+  .navlink:hover { color: var(--ink); }
+
+  .hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 54px; align-items: center;
+    padding: 56px 0 70px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 9px; background: rgba(45,212,191,.08);
+    border: 1px solid rgba(45,212,191,.28); color: #bdeede; padding: 6px 14px; border-radius: 999px;
+    font-size: 13px; letter-spacing: .3px; }
+  .eyebrow .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--teal);
+    box-shadow: 0 0 0 0 rgba(45,212,191,.6); animation: pulse 2.2s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(45,212,191,.6)} 70%{box-shadow:0 0 0 9px rgba(45,212,191,0)} 100%{box-shadow:0 0 0 0 rgba(45,212,191,0)} }
+
+  h1 { font-size: clamp(40px, 5.6vw, 68px); line-height: 1.02; letter-spacing: -1.2px; margin: 22px 0 0;
+    font-weight: 800;
+    background: linear-gradient(105deg, #ffffff 0%, #cfe6ff 42%, #b9f3df 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .lede { font-size: 18.5px; color: #c4d2e2; margin: 22px 0 0; max-width: 560px; }
+  .lede b { color: #fff; font-weight: 600; }
+
+  .cta-row { margin-top: 32px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .cta { display: inline-flex; align-items: center; gap: 11px; font-weight: 800; font-size: 18px;
+    color: #04121d; padding: 16px 28px; border-radius: 13px;
+    background: linear-gradient(100deg, #46a6ff, #2dd4bf 60%, #59d39a);
+    box-shadow: 0 10px 34px rgba(45,160,230,.4); transition: transform .14s, box-shadow .14s; }
+  .cta:hover { transform: translateY(-2px); box-shadow: 0 16px 46px rgba(45,160,230,.55); }
+  .cta .arr { font-size: 21px; transition: transform .14s; }
+  .cta:hover .arr { transform: translateX(4px); }
+  .cta-sub { color: var(--mut); font-size: 14px; }
+
+  .stats { margin-top: 38px; display: flex; gap: 30px; flex-wrap: wrap; }
+  .stat .v { font-size: 27px; font-weight: 800; letter-spacing: -.5px;
+    background: linear-gradient(120deg,#eaf4ff,#bfe9da); -webkit-background-clip: text; background-clip:text; -webkit-text-fill-color: transparent; }
+  .stat .k { font-size: 12px; color: var(--mut); text-transform: uppercase; letter-spacing: .6px; margin-top: 1px; }
+  .stat + .stat { padding-left: 30px; border-left: 1px solid var(--line); }
+
+  /* ---- glass impact card ---- */
+  .card { position: relative; background: linear-gradient(180deg, rgba(28,38,54,.72), rgba(16,22,32,.72));
+    border: 1px solid rgba(255,255,255,.09); border-radius: 20px; padding: 26px;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 30px 70px rgba(0,0,0,.5); }
+  .card .cardhead { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .card .cardhead .t { font-size: 12px; text-transform: uppercase; letter-spacing: .7px; color: var(--mut); }
+  .card .cardhead .roll { font-size: 12px; color: var(--mut2); }
+  .bignum { font-size: 50px; font-weight: 800; letter-spacing: -1.5px; line-height: 1;
+    background: linear-gradient(120deg,#ff9b9b,#ef6b6b); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .bigsub { color: #c4d2e2; font-size: 14px; margin: 9px 0 20px; }
+  .bigsub b { color: #fff; }
+
+  .pbar { margin: 13px 0; opacity: 0; transform: translateY(8px); animation: fadeUp .5s ease forwards; }
+  .pbar .row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+  .pbar .row .lab { color: #d6e2ee; }
+  .pbar .row .val { color: var(--mut); }
+  .pbar .row .val b { color: #ff9b9b; font-weight: 600; }
+  .track { height: 12px; border-radius: 7px; background: rgba(255,255,255,.06); overflow: hidden; display: flex; }
+  .track .keep { height: 100%; background: linear-gradient(90deg,#3a7bd0,#2dd4bf); }
+  .track .lose { height: 100%; background: repeating-linear-gradient(45deg,#ef6b6b,#ef6b6b 5px,#d85a5a 5px,#d85a5a 10px); }
+  .cardfoot { margin-top: 18px; font-size: 12px; color: var(--mut2); display: flex; align-items: center; gap: 8px; }
+
+  /* ---- features ---- */
+  .features { padding: 18px 0 50px; }
+  .features h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .7px; color: var(--mut); margin: 0 0 18px; }
+  .ftiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .ftile { background: rgba(255,255,255,.025); border: 1px solid var(--line); border-radius: 15px; padding: 20px;
+    transition: border-color .15s, transform .15s, background .15s; }
+  .ftile:hover { border-color: rgba(45,212,191,.5); transform: translateY(-3px); background: rgba(45,212,191,.05); }
+  .ficon { width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center; margin-bottom: 14px;
+    background: linear-gradient(135deg, rgba(70,166,255,.16), rgba(45,212,191,.16)); border: 1px solid rgba(45,212,191,.25); }
+  .ficon svg { width: 21px; height: 21px; stroke: #7fe9d3; fill: none; stroke-width: 1.8; }
+  .ftile .ft { font-weight: 700; font-size: 15px; }
+  .ftile .fd { color: var(--mut); font-size: 13.5px; margin-top: 5px; }
+
+  /* ---- author + footer ---- */
+  .author { display: flex; gap: 18px; align-items: flex-start; background: rgba(255,255,255,.025);
+    border: 1px solid var(--line); border-left: 3px solid var(--green); border-radius: 16px; padding: 22px; margin-bottom: 46px; }
+  .avatar { flex: none; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+    font-weight: 800; font-size: 19px; color: #04121d; background: linear-gradient(135deg,#46a6ff,#59d39a); }
+  .author .name { font-size: 16px; } .author .name b { color: #fff; }
+  .author .blurb { color: var(--mut); font-size: 14px; margin-top: 5px; }
+  .author .contact { font-size: 14px; margin-top: 10px; color: var(--mut); }
+  .author .contact b { color: #fff; }
+
+  footer { border-top: 1px solid var(--line); }
+  .fine { padding: 22px 0 46px; color: var(--mut2); font-size: 11px; line-height: 1.65; max-width: 1000px; }
+  .fine b { color: var(--mut); }
+
+  .reveal { opacity: 0; transform: translateY(14px); animation: fadeUp .6s cubic-bezier(.2,.7,.3,1) forwards; }
+  @keyframes fadeUp { to { opacity: 1; transform: none; } }
+
+  @media (max-width: 880px) {
+    .hero { grid-template-columns: 1fr; gap: 36px; padding: 30px 0 50px; }
+    .ftiles { grid-template-columns: 1fr 1fr; }
+    .card { order: 2; }
   }
-  select { width: 100%; }
-  .presets { display: flex; gap: 6px; margin-top: 9px; flex-wrap: wrap; }
-  .chip { background: var(--panel2); border: 1px solid var(--line); color: var(--mut);
-    border-radius: 999px; padding: 4px 11px; font-size: 12px; cursor: pointer; }
-  .chip:hover { border-color: var(--accent); color: var(--ink); }
-  .chip.on { background: rgba(74,163,255,.16); border-color: var(--accent); color: var(--ink); }
-  .scn-name { font-size: 13px; color: var(--amber); margin-top: 9px; min-height: 18px; }
-
-  /* KPIs */
-  .kpis { margin-top: 16px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
-  .kpi .k { font-size: 11px; color: var(--mut); text-transform: uppercase; letter-spacing: .5px; }
-  .kpi .v { font-size: 24px; font-weight: 700; margin-top: 6px; }
-  .kpi .s { font-size: 12px; color: var(--mut2); margin-top: 3px; }
-  .kpi.lost .v { color: var(--red); }
-  .kpi.free .v { color: var(--amber); }
-
-  .two { margin-top: 16px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; }
-  h3 { margin: 0 0 14px; font-size: 14px; }
-  h3 .mut { color: var(--mut); font-weight: 400; }
-
-  /* bar chart */
-  .bar { margin-bottom: 14px; }
-  .bar .top { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
-  .bar .top .lab { color: var(--ink); }
-  .bar .top .val { color: var(--mut); }
-  .track { height: 26px; background: var(--panel2); border-radius: 6px; overflow: hidden; display: flex; }
-  .track .keep { background: linear-gradient(90deg,#3a7bd0,#46c08a); height: 100%; }
-  .track .lose { background: repeating-linear-gradient(45deg,#ef6b6b,#ef6b6b 6px,#d85a5a 6px,#d85a5a 12px); height: 100%; }
-  .bar.current .track { outline: 2px solid var(--amber); outline-offset: 1px; }
-
-  /* split */
-  .split-bar { height: 30px; border-radius: 6px; overflow: hidden; display: flex; margin: 8px 0 14px; }
-  .split-bar .hs { background: var(--homestead); } .split-bar .nh { background: var(--nonhs); }
-  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--mut); }
-  .legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
-  .splitnote { font-size: 12px; color: var(--mut2); margin-top: 10px; }
-
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-  th:first-child, td:first-child { text-align: left; }
-  th { color: var(--mut); font-weight: 600; cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--panel); }
-  tbody tr:hover { background: var(--panel2); }
-  .num { font-variant-numeric: tabular-nums; }
-  .pill { font-size: 11px; padding: 1px 8px; border-radius: 999px; }
-  .pill.hs { background: rgba(74,163,255,.16); color: #9cc9ff; }
-  .pill.nh { background: rgba(107,120,137,.18); color: var(--mut); }
-  .lost-num { color: var(--red); }
-
-  .tablebar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
-  .tablebar input[type=text] { width: 240px; }
-  .scroll { max-height: 540px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; }
-  .pager { display: flex; gap: 10px; align-items: center; justify-content: flex-end; margin-top: 10px; color: var(--mut); font-size: 13px; }
-  .pager button { background: var(--panel2); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; cursor: pointer; }
-  .pager button:disabled { opacity: .4; cursor: default; }
-  .sec-title { margin: 26px 0 0; font-size: 16px; }
-  @media (max-width: 900px) {
-    .controls, .kpis, .two { grid-template-columns: 1fr; }
-    .kpis { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 520px) {
+    .ftiles { grid-template-columns: 1fr; }
+    .stats { gap: 20px; } .stat + .stat { padding-left: 20px; }
   }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>Key Biscayne · ZIP 33149 — Property Tax Relief Impact</h1>
-    <div class="sub">Modeling Florida's proposed homestead exemption (“Save Our Homes from Excessive Property Taxes”) against the local tax base.</div>
-    <div class="badges" id="badges"></div>
-  </header>
-
-  <details class="assume">
-    <summary>Data sources &amp; modeling assumptions (read me)</summary>
-    <div class="body">
-      <ul>
-        <li><b>Parcel universe:</b> all ZIP 33149 folios from Miami-Dade County's live ArcGIS “Property @ PaGis” layer. (The UM GDSC mirror in the brief is dead — its query backend 400s on every request — so we use the county's own equivalent layer.)</li>
-        <li><b>Values &amp; exemptions:</b> per-folio from the Miami-Dade Property Appraiser public roll API (certified <b id="rollyr2">2025</b> roll). The GIS layers carry <i>no</i> exemption flag or taxable value — this API is the source for both.</li>
-        <li><b>Taxable base used:</b> the <b>non-school local taxable value</b> (county/municipal taxable, after current exemptions). This is the base the Village of Key Biscayne + Miami-Dade county millage levy on. School taxable differs slightly (the extra $25K homestead exemption doesn't apply to schools) and is excluded from this model's base.</li>
-        <li><b>The bill:</b> exempts the first $250K (then $500K, then all) of a <b>homestead's</b> value from taxation. Modeled as: reduce each homestead's taxable value by the exemption (floor $0); non-homestead residential &amp; commercial are <b>unchanged</b> in every scenario.</li>
-        <li><b>Millage default 15.6226 mills</b> = combined Village + County + School + special districts (2025). Village-of-KB-only operating millage is 2.9794. Both editable below.</li>
-        <li><b>Validation:</b> summed Key-Biscayne-municipality taxable ≈ <span id="valnote"></span>, vs the published $11.6B record base — a close match.</li>
-      </ul>
-    </div>
-  </details>
-
-  <!-- CONTROLS -->
-  <div class="controls">
-    <div class="card ctl">
-      <label>Geography</label>
-      <select id="geo">
-        <option value="all">All ZIP 33149</option>
-        <option value="kb">Village of Key Biscayne only</option>
-        <option value="miami">City of Miami (Virginia Key) only</option>
-        <option value="uninc">Unincorporated County only</option>
-      </select>
-      <div class="presets" id="geoCount"></div>
-    </div>
-
-    <div class="card ctl">
-      <label>Combined millage rate (mills)</label>
-      <div class="row">
-        <input type="range" id="milRange" min="0" max="25" step="0.0001" value="15.6226" />
-        <input type="number" id="milNum" min="0" max="40" step="0.0001" value="15.6226" />
-      </div>
-      <div class="presets">
-        <span class="chip" data-mil="15.6226">Combined 15.6226</span>
-        <span class="chip" data-mil="2.9794">Village only 2.9794</span>
-      </div>
-    </div>
-
-    <div class="card ctl">
-      <label>New homestead exemption</label>
-      <div class="row">
-        <input type="range" id="exRange" min="0" max="2000000" step="25000" value="250000" />
-        <input type="number" id="exNum" min="0" max="5000000" step="25000" value="250000" />
-      </div>
-      <div class="presets">
-        <span class="chip" data-ex="250000">$250K</span>
-        <span class="chip" data-ex="500000">$500K</span>
-        <span class="chip" id="fullElim" data-full="1">Full elimination</span>
-      </div>
-      <div class="scn-name" id="scnName"></div>
-    </div>
+  <div class="bg">
+    <div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div>
+    <div class="grid"></div>
+    <svg class="wave" viewBox="0 0 1440 220" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,140 C240,90 420,190 720,150 C1020,110 1200,180 1440,130 L1440,220 L0,220 Z" fill="rgba(45,212,191,.05)"/>
+      <path d="M0,170 C260,130 480,210 760,175 C1040,140 1230,200 1440,165 L1440,220 L0,220 Z" fill="rgba(70,166,255,.05)"/>
+    </svg>
   </div>
 
-  <!-- KPIs -->
-  <div class="kpis" id="kpis"></div>
+  <div class="page">
+    <div class="container">
+      <nav class="reveal">
+        <div class="brand"><span class="dot"></span> KB Tax Relief <small>· ZIP 33149</small></div>
+        <a class="navlink" href="app.html">Open dashboard →</a>
+      </nav>
 
-  <!-- CHARTS -->
-  <div class="two">
-    <div class="card">
-      <h3>Scenario comparison <span class="mut">— local revenue retained vs lost, at current millage &amp; geography</span></h3>
-      <div id="chart"></div>
-      <div class="legend" style="margin-top:6px">
-        <span><span class="dot" style="background:linear-gradient(90deg,#3a7bd0,#46c08a)"></span>Revenue retained</span>
-        <span><span class="dot" style="background:#ef6b6b"></span>Revenue lost</span>
+      <section class="hero">
+        <div class="herotext">
+          <span class="eyebrow reveal" style="animation-delay:.05s"><span class="pulse"></span> Florida ballot measure · November 2026</span>
+          <h1 class="reveal" style="animation-delay:.12s">See how it affects your home.</h1>
+          <p class="lede reveal" style="animation-delay:.2s">
+            Florida voters will decide whether to erase property tax on the first <b>$250,000</b> —
+            then <b>$500,000</b>, and eventually <b>all</b> — of a homesteaded property's value.
+            This independent tool models, parcel by parcel, what that would do to the local tax base of
+            <b>Key Biscayne</b> — and to streets like yours.
+          </p>
+          <div class="cta-row reveal" style="animation-delay:.28s">
+            <a class="cta" href="app.html">See how it affects your home <span class="arr">→</span></a>
+            <span class="cta-sub">Free · no sign-up · public data</span>
+          </div>
+          <div class="stats reveal" id="stats" style="animation-delay:.36s">
+            <div class="stat"><div class="v">2025</div><div class="k">Certified roll</div></div>
+            <div class="stat"><div class="v">7,431</div><div class="k">Parcels analyzed</div></div>
+            <div class="stat"><div class="v">2,892</div><div class="k">Homesteads</div></div>
+          </div>
+        </div>
+
+        <div class="card reveal" style="animation-delay:.3s">
+          <div class="cardhead"><span class="t">What's at stake · ZIP 33149</span><span class="roll" id="cardRoll">2025 roll</span></div>
+          <div class="bignum" id="bignum">$64M</div>
+          <div class="bigsub">in annual local property-tax revenue would shift under <b>full homestead elimination</b> — about <b id="bigpct">36%</b> of the base.</div>
+          <div id="preview">
+            <div class="pbar"><div class="row"><span class="lab">$250K exemption</span><span class="val"><b>−$11.1M</b> · 6.1%</span></div><div class="track"><div class="keep" style="width:93.9%"></div><div class="lose" style="width:6.1%"></div></div></div>
+            <div class="pbar"><div class="row"><span class="lab">$500K exemption</span><span class="val"><b>−$20.5M</b> · 11.4%</span></div><div class="track"><div class="keep" style="width:88.6%"></div><div class="lose" style="width:11.4%"></div></div></div>
+            <div class="pbar"><div class="row"><span class="lab">Full elimination</span><span class="val"><b>−$64.1M</b> · 35.5%</span></div><div class="track"><div class="keep" style="width:64.5%"></div><div class="lose" style="width:35.5%"></div></div></div>
+          </div>
+          <div class="cardfoot">Estimated at the combined 15.6226 mills · adjust everything inside →</div>
+        </div>
+      </section>
+
+      <section class="features">
+        <h2>What you can do inside</h2>
+        <div class="ftiles">
+          <div class="ftile reveal" style="animation-delay:.1s">
+            <div class="ficon"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h12"/></svg></div>
+            <div class="ft">Compare scenarios</div>
+            <div class="fd">$250K, $500K, and full elimination, side by side.</div>
+          </div>
+          <div class="ftile reveal" style="animation-delay:.16s">
+            <div class="ficon"><svg viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></div>
+            <div class="ft">Adjust live</div>
+            <div class="fd">Set the millage and exemption; numbers update instantly.</div>
+          </div>
+          <div class="ftile reveal" style="animation-delay:.22s">
+            <div class="ficon"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2v10h10"/></svg></div>
+            <div class="ft">Homestead vs. the rest</div>
+            <div class="fd">Only homesteads are touched — see exactly the split.</div>
+          </div>
+          <div class="ftile reveal" style="animation-delay:.28s">
+            <div class="ficon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+            <div class="ft">Every parcel</div>
+            <div class="fd">Search all 7,431 parcels by type, status, and address.</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="author reveal">
+          <div class="avatar">RG</div>
+          <div>
+            <div class="name">Created by <b>Ruben Gil</b> — a Key Biscayne resident.</div>
+            <div class="blurb">I built this independently to help my neighbors and Miami-Dade County understand how this
+              proposed bill may affect them. It's free, non-partisan, and uses only public records — no tracking, no sign-up.</div>
+            <div class="contact">Questions or feedback? <b><a href="mailto:rgil@innov8tive.solutions">rgil@innov8tive.solutions</a></b></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      <div class="container">
+        <div class="fine">
+          Independent, non-partisan estimate built from publicly available data (Miami-Dade County GIS and the
+          Miami-Dade Property Appraiser's certified <span id="ry">2025</span> tax roll). Provided for general informational
+          and educational purposes only — <b>this is not financial, tax, legal, or investment advice</b>. Figures are modeled
+          estimates based on stated assumptions and a simplified model; they may contain errors and may not reflect any
+          individual property's specific assessment, exemptions, or future millage decisions. Property values, exemptions,
+          millage rates, and the proposed legislation are all subject to change, and the amendment requires voter approval
+          to take effect. No warranty, express or implied, is made as to the accuracy or completeness of this information.
+          By using this tool you acknowledge and agree that <b>Ruben Gil and any contributors assume no liability</b> for any
+          loss, damage, or decision arising from its use. For guidance specific to your property, consult the Miami-Dade
+          Property Appraiser and a qualified tax, legal, or financial professional.
+        </div>
       </div>
-    </div>
-    <div class="card">
-      <h3>Homestead vs non-homestead <span class="mut">— share of taxable base</span></h3>
-      <div id="split"></div>
-    </div>
+    </footer>
   </div>
 
-  <!-- PROPERTY TYPE TABLE -->
-  <h3 class="sec-title">Breakdown by property type</h3>
-  <div class="card" style="margin-top:12px">
-    <div class="scroll" style="max-height:none">
-      <table id="classTable"></table>
-    </div>
-  </div>
+  <script src="summary.js"></script>
+  <script>
+    try {
+      const S = window.__SUMMARY__;
+      if (S) {
+        const f0 = (n) => Number(n).toLocaleString();
+        const fAbbr = (n) => { const a = Math.abs(n);
+          if (a >= 1e9) return "$" + (n/1e9).toFixed(2) + "B";
+          if (a >= 1e6) return "$" + (n/1e6).toFixed(1) + "M";
+          if (a >= 1e3) return "$" + (n/1e3).toFixed(0) + "K"; return "$" + f0(n); };
+        const pct1 = (x) => (x*100).toFixed(1) + "%";
 
-  <!-- PARCEL TABLE -->
-  <h3 class="sec-title">Parcel-level detail</h3>
-  <div class="card" style="margin-top:12px">
-    <div class="tablebar">
-      <input type="text" id="search" placeholder="Search folio or address…" />
-      <select id="fCls" style="width:auto"><option value="">All property types</option></select>
-      <select id="fHs" style="width:auto">
-        <option value="">Homestead &amp; non</option>
-        <option value="1">Homestead only</option>
-        <option value="0">Non-homestead only</option>
-      </select>
-      <span class="badge" id="rowCount"></span>
-    </div>
-    <div class="scroll">
-      <table id="parcelTable"></table>
-    </div>
-    <div class="pager">
-      <span id="pageInfo"></span>
-      <button id="prev">‹ Prev</button>
-      <button id="next">Next ›</button>
-    </div>
-  </div>
-</div>
+        // stats strip
+        document.getElementById("stats").innerHTML = [
+          { v: S.roll_year, k: "Certified roll" },
+          { v: f0(S.counts.parcels), k: "Parcels analyzed" },
+          { v: f0(S.counts.homestead), k: "Homesteads" },
+        ].map(s => `<div class="stat"><div class="v">${s.v}</div><div class="k">${s.k}</div></div>`).join("");
 
-<script src="data.js"></script>
-<script>
-const P = window.__PARCELS__ || [];
-const S = window.__SUMMARY__ || {};
-const D = S.defaults || { millage: 15.6226, village_only_millage: 2.9794 };
-
-// ---------- formatting ----------
-const f0 = (n) => Math.round(n).toLocaleString();
-const fUSD = (n) => "$" + f0(n);
-const fAbbr = (n) => {
-  const a = Math.abs(n);
-  if (a >= 1e9) return "$" + (n / 1e9).toFixed(2) + "B";
-  if (a >= 1e6) return "$" + (n / 1e6).toFixed(1) + "M";
-  if (a >= 1e3) return "$" + (n / 1e3).toFixed(0) + "K";
-  return "$" + f0(n);
-};
-const fPct = (x) => (x * 100).toFixed(1) + "%";
-
-// ---------- state ----------
-const st = { geo: "all", millage: D.millage, exemption: 250000, full: false,
-             search: "", fCls: "", fHs: "", sort: "taxable", dir: -1, page: 0, per: 100 };
-
-// ---------- geography filter ----------
-function geoMatch(r) {
-  const m = (r.muni || "").toLowerCase();
-  if (st.geo === "kb") return m.includes("key biscayne");
-  if (st.geo === "miami") return m === "miami";
-  if (st.geo === "uninc") return m.includes("unincorporated");
-  return true;
-}
-function activeParcels() { return P.filter(geoMatch); }
-
-// ---------- scenario engine (mirrors pipeline/03_build_model.mjs) ----------
-const taxOf = (taxable, mil) => taxable * (mil / 1000);
-function scnTax(r, mil, ex, full) {
-  if (!r.homestead) return taxOf(r.taxable, mil);
-  if (full) return 0;
-  return taxOf(Math.max(0, r.taxable - ex), mil);
-}
-// aggregate a parcel set under (mil, ex, full); returns {rev, base, lost, pct, free, hsBase, nhBase}
-function aggregate(rows, mil, ex, full) {
-  let rev = 0, base = 0, free = 0, hsBase = 0, nhBase = 0;
-  for (const r of rows) {
-    const b = taxOf(r.taxable, mil); base += b;
-    rev += scnTax(r, mil, ex, full);
-    if (r.homestead) { hsBase += r.taxable; if (scnTax(r, mil, ex, full) === 0 && r.taxable > 0) free++; }
-    else nhBase += r.taxable;
-  }
-  return { rev, base, lost: base - rev, pct: base > 0 ? (base - rev) / base : 0, free, hsBase, nhBase };
-}
-
-// ---------- render ----------
-function render() {
-  const rows = activeParcels();
-  const cur = aggregate(rows, st.millage, st.full ? 0 : st.exemption, st.full);
-
-  // scenario name
-  document.getElementById("scnName").textContent = st.full
-    ? "Scenario: full homestead elimination"
-    : "Scenario: " + fAbbr(st.exemption) + " homestead exemption";
-
-  // KPIs
-  const hsCount = rows.filter(r => r.homestead).length;
-  document.getElementById("kpis").innerHTML = [
-    kpi("Baseline local revenue", fAbbr(cur.base), fUSD(cur.base), ""),
-    kpi("Revenue under scenario", fAbbr(cur.rev), fUSD(cur.rev), ""),
-    kpi("Revenue lost", fAbbr(cur.lost), fPct(cur.pct) + " of base", "lost"),
-    kpi("Homesteads fully tax-free", f0(cur.free), "of " + f0(hsCount) + " homesteads", "free"),
-    kpi("Homestead share of base", fPct(cur.hsBase / (cur.hsBase + cur.nhBase || 1)), fAbbr(cur.hsBase), ""),
-  ].join("");
-
-  renderChart(rows, cur);
-  renderSplit(cur);
-  renderClassTable(rows);
-  renderParcels(rows);
-  document.getElementById("geoCount").innerHTML =
-    '<span class="badge"><b>' + f0(rows.length) + '</b> parcels in view</span>';
-}
-function kpi(k, v, s, cls) {
-  return `<div class="kpi ${cls||''}"><div class="k">${k}</div><div class="v num">${v}</div><div class="s">${s}</div></div>`;
-}
-
-function renderChart(rows, cur) {
-  const defs = [
-    { lab: "Baseline (current)", ex: 0, full: false },
-    { lab: "$250K homestead exemption", ex: 250000, full: false },
-    { lab: "$500K homestead exemption", ex: 500000, full: false },
-    { lab: "Full elimination (homestead)", ex: 0, full: true },
-  ];
-  // current custom scenario (only show if not exactly a preset)
-  const isPreset = !st.full && (st.exemption === 250000 || st.exemption === 500000);
-  const items = defs.map(d => ({ ...d, ...aggregate(rows, st.millage, d.ex, d.full) }));
-  let currentItem = null;
-  if (!isPreset) {
-    currentItem = { lab: (st.full ? "Full elimination" : fAbbr(st.exemption) + " exemption") + " · current", current: true, ...cur };
-  }
-  const all = currentItem ? [...items.slice(0,1), currentItem, ...items.slice(1)] : items;
-  const max = items[0].base || 1;
-  document.getElementById("chart").innerHTML = all.map(it => {
-    const keepPct = (it.rev / max) * 100, losePct = (it.lost / max) * 100;
-    return `<div class="bar ${it.current ? 'current' : ''}">
-      <div class="top"><span class="lab">${it.lab}</span>
-        <span class="val">retain ${fAbbr(it.rev)} · <span class="lost-num">lose ${fAbbr(it.lost)}</span> (${fPct(it.pct)})</span></div>
-      <div class="track"><div class="keep" style="width:${keepPct}%"></div><div class="lose" style="width:${losePct}%"></div></div>
-    </div>`;
-  }).join("");
-}
-
-function renderSplit(cur) {
-  const total = cur.hsBase + cur.nhBase || 1;
-  const hsP = (cur.hsBase / total) * 100;
-  document.getElementById("split").innerHTML = `
-    <div class="split-bar">
-      <div class="hs" style="width:${hsP}%"></div>
-      <div class="nh" style="width:${100 - hsP}%"></div>
-    </div>
-    <div class="legend">
-      <span><span class="dot" style="background:var(--homestead)"></span>Homestead ${fPct(cur.hsBase/total)} · ${fAbbr(cur.hsBase)}</span>
-      <span><span class="dot" style="background:var(--nonhs)"></span>Non-homestead ${fPct(cur.nhBase/total)} · ${fAbbr(cur.nhBase)}</span>
-    </div>
-    <div class="splitnote">Only the homestead slice is touched by the bill. Non-homestead residential and all commercial
-    property (${fAbbr(cur.nhBase)} of base) keep paying in full under every scenario — which is why the local revenue
-    floor never drops below their share.</div>`;
-}
-
-function renderClassTable(rows) {
-  const ex = st.full ? 0 : st.exemption;
-  const m = {};
-  for (const r of rows) {
-    const k = r.cls; (m[k] ||= { cls: k, n: 0, hs: 0, base: 0, btax: 0, stax: 0 });
-    m[k].n++; if (r.homestead) m[k].hs++;
-    m[k].base += r.taxable;
-    m[k].btax += taxOf(r.taxable, st.millage);
-    m[k].stax += scnTax(r, st.millage, ex, st.full);
-  }
-  const arr = Object.values(m).sort((a, b) => b.base - a.base);
-  const head = `<thead><tr><th>Property type</th><th># parcels</th><th>Homesteads</th>
-    <th>Taxable base</th><th>Baseline tax</th><th>Scenario tax</th><th>Revenue lost</th><th>% lost</th></tr></thead>`;
-  const body = arr.map(x => {
-    const lost = x.btax - x.stax, pct = x.btax > 0 ? lost / x.btax : 0;
-    return `<tr><td>${x.cls}</td><td class="num">${f0(x.n)}</td><td class="num">${f0(x.hs)}</td>
-      <td class="num">${fAbbr(x.base)}</td><td class="num">${fAbbr(x.btax)}</td><td class="num">${fAbbr(x.stax)}</td>
-      <td class="num lost-num">${lost > 0 ? fAbbr(lost) : "—"}</td><td class="num">${lost > 0 ? fPct(pct) : "—"}</td></tr>`;
-  }).join("");
-  document.getElementById("classTable").innerHTML = head + "<tbody>" + body + "</tbody>";
-}
-
-// ---------- parcel table ----------
-function filteredParcels() {
-  const ex = st.full ? 0 : st.exemption;
-  const q = st.search.trim().toLowerCase();
-  let rows = activeParcels().filter(r => {
-    if (st.fCls && r.cls !== st.fCls) return false;
-    if (st.fHs !== "" && String(r.homestead) !== st.fHs) return false;
-    if (q && !(r.folio.includes(q) || (r.addr || "").toLowerCase().includes(q))) return false;
-    return true;
-  }).map(r => {
-    const btax = taxOf(r.taxable, st.millage);
-    const stax = scnTax(r, st.millage, ex, st.full);
-    return { ...r, btax, stax, change: stax - btax };
-  });
-  const key = st.sort;
-  rows.sort((a, b) => {
-    let av = a[key], bv = b[key];
-    if (typeof av === "string") { av = av || ""; bv = bv || ""; return st.dir * av.localeCompare(bv); }
-    return st.dir * ((av || 0) - (bv || 0));
-  });
-  return rows;
-}
-function renderParcels(_rows) {
-  const rows = filteredParcels();
-  const pages = Math.max(1, Math.ceil(rows.length / st.per));
-  if (st.page >= pages) st.page = pages - 1;
-  const slice = rows.slice(st.page * st.per, st.page * st.per + st.per);
-  const cols = [
-    ["folio", "Folio"], ["addr", "Address"], ["cls", "Type"], ["homestead", "HS"],
-    ["taxable", "Taxable base"], ["assessedVal", "Assessed"], ["btax", "Baseline tax"],
-    ["stax", "Scenario tax"], ["change", "Change"],
-  ];
-  const head = "<thead><tr>" + cols.map(([k, l]) =>
-    `<th data-k="${k}">${l}${st.sort === k ? (st.dir < 0 ? " ▾" : " ▴") : ""}</th>`).join("") + "</tr></thead>";
-  const body = slice.map(r => `<tr>
-    <td class="num">${r.folio}</td>
-    <td>${r.addr || '<span style="color:var(--mut2)">—</span>'}</td>
-    <td>${r.cls}</td>
-    <td>${r.homestead ? '<span class="pill hs">HS</span>' : '<span class="pill nh">—</span>'}</td>
-    <td class="num">${fUSD(r.taxable)}</td>
-    <td class="num">${fUSD(r.assessedVal)}</td>
-    <td class="num">${fUSD(r.btax)}</td>
-    <td class="num">${fUSD(r.stax)}</td>
-    <td class="num ${r.change < 0 ? 'lost-num' : ''}">${r.change < 0 ? "−" + fUSD(-r.change) : "$0"}</td>
-  </tr>`).join("");
-  document.getElementById("parcelTable").innerHTML = head + "<tbody>" + body + "</tbody>";
-  document.getElementById("rowCount").innerHTML = "<b>" + f0(rows.length) + "</b> parcels match";
-  document.getElementById("pageInfo").textContent = `Page ${st.page + 1} / ${pages} · showing ${slice.length} of ${f0(rows.length)}`;
-  document.getElementById("prev").disabled = st.page === 0;
-  document.getElementById("next").disabled = st.page >= pages - 1;
-  document.querySelectorAll("#parcelTable th").forEach(th => th.onclick = () => {
-    const k = th.dataset.k;
-    if (st.sort === k) st.dir *= -1; else { st.sort = k; st.dir = -1; }
-    renderParcels();
-  });
-}
-
-// ---------- wiring ----------
-function syncEx() {
-  document.querySelectorAll("[data-ex]").forEach(c => c.classList.toggle("on", !st.full && +c.dataset.ex === st.exemption));
-  document.getElementById("fullElim").classList.toggle("on", st.full);
-  document.getElementById("exRange").disabled = st.full;
-  document.getElementById("exNum").disabled = st.full;
-}
-function syncMil() {
-  document.querySelectorAll("[data-mil]").forEach(c => c.classList.toggle("on", Math.abs(+c.dataset.mil - st.millage) < 1e-6));
-}
-document.getElementById("geo").onchange = e => { st.geo = e.target.value; st.page = 0; render(); };
-document.getElementById("milRange").oninput = e => { st.millage = +e.target.value; document.getElementById("milNum").value = st.millage; syncMil(); render(); };
-document.getElementById("milNum").oninput = e => { st.millage = +e.target.value || 0; document.getElementById("milRange").value = st.millage; syncMil(); render(); };
-document.querySelectorAll("[data-mil]").forEach(c => c.onclick = () => {
-  st.millage = +c.dataset.mil; document.getElementById("milRange").value = st.millage; document.getElementById("milNum").value = st.millage; syncMil(); render();
-});
-document.getElementById("exRange").oninput = e => { st.full = false; st.exemption = +e.target.value; document.getElementById("exNum").value = st.exemption; syncEx(); render(); };
-document.getElementById("exNum").oninput = e => { st.full = false; st.exemption = +e.target.value || 0; document.getElementById("exRange").value = Math.min(st.exemption, 2000000); syncEx(); render(); };
-document.querySelectorAll("[data-ex]").forEach(c => c.onclick = () => {
-  st.full = false; st.exemption = +c.dataset.ex; document.getElementById("exRange").value = st.exemption; document.getElementById("exNum").value = st.exemption; syncEx(); render();
-});
-document.getElementById("fullElim").onclick = () => { st.full = !st.full; syncEx(); render(); };
-document.getElementById("search").oninput = e => { st.search = e.target.value; st.page = 0; renderParcels(); };
-document.getElementById("fCls").onchange = e => { st.fCls = e.target.value; st.page = 0; renderParcels(); };
-document.getElementById("fHs").onchange = e => { st.fHs = e.target.value; st.page = 0; renderParcels(); };
-document.getElementById("prev").onclick = () => { if (st.page > 0) { st.page--; renderParcels(); } };
-document.getElementById("next").onclick = () => { st.page++; renderParcels(); };
-
-// ---------- init ----------
-(function init() {
-  // badges
-  const c = S.counts || {};
-  document.getElementById("badges").innerHTML = [
-    `<span class="badge">Roll year <b>${S.roll_year || "—"}</b></span>`,
-    `<span class="badge"><b>${f0(c.parcels || P.length)}</b> parcels</span>`,
-    `<span class="badge"><b>${f0(c.homestead || 0)}</b> homesteads</span>`,
-    `<span class="badge">Source <b>Miami-Dade PA roll API</b></span>`,
-    `<span class="badge">Built <b>${(S.generated_at || "").slice(0, 10)}</b></span>`,
-  ].join("");
-  if (S.roll_year) document.getElementById("rollyr2").textContent = S.roll_year;
-  if (S.validation) document.getElementById("valnote").textContent = fAbbr(S.validation.computed_kb_taxable);
-
-  // property-type filter options
-  const classes = [...new Set(P.map(r => r.cls))].sort();
-  document.getElementById("fCls").insertAdjacentHTML("beforeend",
-    classes.map(c => `<option value="${c}">${c}</option>`).join(""));
-
-  syncMil(); syncEx(); render();
-})();
-</script>
+        const sc = S.scenarios_at_default_millage;
+        if (sc) {
+          // headline number = full elimination
+          document.getElementById("bignum").textContent = fAbbr(sc.full.revenue_lost);
+          document.getElementById("bigpct").textContent = Math.round(sc.full.pct_base_eroded*100) + "%";
+          const rows = [
+            { lab: "$250K exemption", s: sc.e250 },
+            { lab: "$500K exemption", s: sc.e500 },
+            { lab: "Full elimination", s: sc.full },
+          ];
+          document.getElementById("preview").innerHTML = rows.map((r, i) => {
+            const lose = r.s.pct_base_eroded * 100;
+            return `<div class="pbar" style="animation-delay:${.45 + i*.12}s">
+              <div class="row"><span class="lab">${r.lab}</span>
+                <span class="val"><b>−${fAbbr(r.s.revenue_lost)}</b> · ${pct1(r.s.pct_base_eroded)}</span></div>
+              <div class="track"><div class="keep" style="width:${100-lose}%"></div><div class="lose" style="width:${lose}%"></div></div>
+            </div>`;
+          }).join("");
+        }
+        const mil = (S.defaults && S.defaults.millage) || 15.6226;
+        document.querySelector(".cardfoot").firstChild &&
+          (document.querySelector(".cardfoot").textContent = `Estimated at the combined ${mil} mills · adjust everything inside →`);
+        if (S.roll_year) { document.getElementById("ry").textContent = S.roll_year;
+          document.getElementById("cardRoll").textContent = S.roll_year + " roll"; }
+      }
+    } catch (e) { /* keep static fallback figures */ }
+  </script>
 </body>
 </html>
