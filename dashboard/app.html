@@ -97,6 +97,15 @@
   .chip:hover { border-color: var(--accent); color: var(--ink); }
   .chip.on { background: linear-gradient(100deg, rgba(70,166,255,.22), rgba(45,212,191,.22)); border-color: rgba(45,212,191,.6); color: var(--ink); }
   .scn-name { font-size: 13px; color: var(--amber); margin-top: 9px; min-height: 18px; }
+  /* ZIP multi-select (inside Geography card) */
+  .zips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .zips label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 12px; font-size: 13px; color: var(--mut); user-select: none; }
+  .zips label:hover { color: var(--ink); border-color: rgba(70,166,255,.5); }
+  .zips label.on { background: linear-gradient(100deg, rgba(70,166,255,.22), rgba(45,212,191,.22));
+    border-color: rgba(45,212,191,.6); color: var(--ink); }
+  .zips input[type=checkbox] { accent-color: var(--teal); margin: 0; }
   /* highlighted primary control: New Homestead Exemption */
   .ctl-exempt { border: 1px solid rgba(239,107,107,.55);
     box-shadow: 0 0 24px rgba(239,107,107,.22), 0 18px 44px rgba(0,0,0,.34);
@@ -240,13 +249,13 @@
 </div>
 <div class="wrap">
   <nav class="topnav">
-    <div class="brand"><span class="dot"></span> KB Tax Relief <small>· ZIP 33149</small></div>
+    <div class="brand"><span class="dot"></span> SaveOur.Homes <small id="brandZips">· Miami-Dade</small></div>
     <a class="navlink" href="./">← Back to intro</a>
   </nav>
   <header>
     <span class="eyebrow"><span class="pulse"></span> Florida ballot measure · November 2026</span>
-    <h1>Key Biscayne Tax Relief Impact</h1>
-    <div class="sub">How the proposed homestead exemption (“Save Our Homes from Excessive Property Taxes”) would affect Key Biscayne's local tax base — parcel by parcel.</div>
+    <h1>Property Tax Relief Impact</h1>
+    <div class="sub">How the proposed homestead exemption (“Save Our Homes from Excessive Property Taxes”) would affect local tax bases across <b>ZIP 33149 (Key Biscayne)</b> and <b>ZIP 33156 (Pinecrest area)</b> — parcel by parcel.</div>
     <div class="badges" id="badges"></div>
   </header>
 
@@ -267,9 +276,10 @@
     <summary>Data sources &amp; modeling assumptions (read me)</summary>
     <div class="body">
       <ul>
-        <li><b>Parcel universe:</b> all ZIP 33149 folios from Miami-Dade County's live ArcGIS “Property @ PaGis” layer. (The UM GDSC mirror in the brief is dead — its query backend 400s on every request — so we use the county's own equivalent layer.)</li>
+        <li><b>Parcel universe:</b> all folios in the selected ZIP codes (33149 Key Biscayne, 33156 Pinecrest area), pulled from Miami-Dade County's live ArcGIS “Property @ PaGis” layer. Toggle the ZIP checkboxes below to change scope.</li>
         <li><b>Values &amp; exemptions:</b> per-folio from the Miami-Dade Property Appraiser public roll API (certified <b id="rollyr2">2025</b> roll). The GIS layers carry <i>no</i> exemption flag or taxable value — this API is the source for both.</li>
-        <li><b>Taxable base used:</b> the <b>non-school local taxable value</b> (county/municipal taxable, after current exemptions). This is the base the Village of Key Biscayne + Miami-Dade county millage levy on. School taxable differs slightly (the extra $25K homestead exemption doesn't apply to schools) and is excluded from this model's base.</li>
+        <li><b>Taxable base used:</b> the <b>non-school local taxable value</b> (county/municipal taxable, after current exemptions). This is the base the local municipality + Miami-Dade county millages levy on. School taxable differs slightly (the extra $25K homestead exemption doesn't apply to schools) and is excluded from this model's base.</li>
+        <li><b>Millage caveat:</b> a single combined millage is applied across all selected parcels. Each municipality (Key Biscayne, Pinecrest, Coral Gables, Unincorporated, etc.) actually has a slightly different combined rate. Filter to one municipality to get its accurate estimate.</li>
         <li><b>The bill:</b> exempts the first $250K (then $500K, then all) of a <b>homestead's</b> value from taxation. Modeled as: reduce each homestead's taxable value by the exemption (floor $0); non-homestead residential &amp; commercial are <b>unchanged</b> in every scenario.</li>
         <li><b>Millage default 15.6226 mills</b> = combined Village + County + School + special districts (2025). Village-of-KB-only operating millage is 2.9794. Both editable below.</li>
         <li><b>Validation:</b> summed Key-Biscayne-municipality taxable ≈ <span id="valnote"></span>, vs the published $11.6B record base — a close match.</li>
@@ -296,13 +306,9 @@
 
     <div class="card ctl">
       <label>Geography</label>
-      <select id="geo">
-        <option value="all">All ZIP 33149</option>
-        <option value="kb">Village of Key Biscayne only</option>
-        <option value="miami">City of Miami (Virginia Key) only</option>
-        <option value="uninc">Unincorporated County only</option>
-      </select>
-      <div class="presets" id="geoCount"></div>
+      <div class="zips" id="zipPicker"></div>
+      <select id="geo"><option value="all">All municipalities</option></select>
+      <div class="presets" id="geoCount" style="margin-top:9px"></div>
     </div>
 
     <div class="card ctl">
@@ -393,18 +399,18 @@ const fAbbr = (n) => {
 const fPct = (x) => (x * 100).toFixed(1) + "%";
 
 // ---------- state ----------
-const st = { geo: "all", millage: D.millage, exemption: 250000, full: false,
+const st = { zips: new Set(), geo: "all", millage: D.millage, exemption: 250000, full: false,
              search: "", fCls: "", fHs: "", sort: "taxable", dir: -1, page: 0, per: 100 };
 
-// ---------- geography filter ----------
+// ---------- ZIP + municipality filter ----------
 function geoMatch(r) {
-  const m = (r.muni || "").toLowerCase();
-  if (st.geo === "kb") return m.includes("key biscayne");
-  if (st.geo === "miami") return m === "miami";
-  if (st.geo === "uninc") return m.includes("unincorporated");
-  return true;
+  if (st.zips.size && !st.zips.has(String(r.zip))) return false;
+  if (st.geo === "all") return true;
+  return (r.muni || "") === st.geo;
 }
 function activeParcels() { return P.filter(geoMatch); }
+// Human-readable ZIP labels (used in checkbox text + brand chip)
+const ZIP_LABELS = { "33149": "33149 · Key Biscayne", "33156": "33156 · Pinecrest" };
 
 // ---------- scenario engine (mirrors pipeline/03_build_model.mjs) ----------
 const taxOf = (taxable, mil) => taxable * (mil / 1000);
@@ -682,6 +688,36 @@ function syncEx() {
 function syncMil() {
   document.querySelectorAll("[data-mil]").forEach(c => c.classList.toggle("on", Math.abs(+c.dataset.mil - st.millage) < 1e-6));
 }
+// ZIP checkboxes + municipality dropdown
+function renderZipPicker() {
+  const zips = (S.zips && S.zips.length) ? S.zips : [...new Set(P.map(r => r.zip).filter(Boolean))].sort();
+  const box = document.getElementById("zipPicker");
+  box.innerHTML = zips.map(z => {
+    const on = st.zips.has(z) ? " on" : "";
+    return `<label class="chip${on}" data-zip="${z}"><input type="checkbox" data-zip="${z}" ${st.zips.has(z) ? "checked" : ""}> ${ZIP_LABELS[z] || z}</label>`;
+  }).join("");
+  box.querySelectorAll("input[data-zip]").forEach(cb => cb.onchange = () => {
+    const z = cb.dataset.zip;
+    if (cb.checked) st.zips.add(z); else st.zips.delete(z);
+    if (st.zips.size === 0) { st.zips.add(z); cb.checked = true; } // require ≥1
+    cb.closest("label").classList.toggle("on", cb.checked);
+    populateGeo(); syncBrandChip(); st.page = 0; render();
+  });
+}
+function populateGeo() {
+  const sel = document.getElementById("geo");
+  const current = st.geo;
+  const munis = [...new Set(P.filter(r => st.zips.has(String(r.zip))).map(r => r.muni).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="all">All municipalities</option>' + munis.map(m => `<option value="${m}">${m}</option>`).join("");
+  st.geo = munis.includes(current) ? current : "all";
+  sel.value = st.geo;
+}
+function syncBrandChip() {
+  const el = document.getElementById("brandZips");
+  if (!el) return;
+  const zs = [...st.zips].sort();
+  el.textContent = zs.length ? "· ZIP " + zs.join(" + ") : "· Miami-Dade";
+}
 document.getElementById("geo").onchange = e => { st.geo = e.target.value; st.page = 0; render(); };
 document.getElementById("milRange").oninput = e => { st.millage = +e.target.value; document.getElementById("milNum").value = st.millage; syncMil(); render(); };
 document.getElementById("milNum").oninput = e => { st.millage = +e.target.value || 0; document.getElementById("milRange").value = st.millage; syncMil(); render(); };
@@ -702,10 +738,16 @@ document.getElementById("next").onclick = () => { st.page++; renderParcels(); };
 
 // ---------- init ----------
 (function init() {
+  // seed ZIP selection from data (all on by default) BEFORE rendering
+  const allZips = (S.zips && S.zips.length) ? S.zips : [...new Set(P.map(r => r.zip).filter(Boolean))].sort();
+  allZips.forEach(z => st.zips.add(z));
+  renderZipPicker(); populateGeo(); syncBrandChip();
+
   // badges
   const c = S.counts || {};
   document.getElementById("badges").innerHTML = [
     `<span class="badge">Roll year <b>${S.roll_year || "—"}</b></span>`,
+    `<span class="badge"><b>${allZips.length}</b> ZIPs</span>`,
     `<span class="badge"><b>${f0(c.parcels || P.length)}</b> parcels</span>`,
     `<span class="badge"><b>${f0(c.homestead || 0)}</b> homesteads</span>`,
     `<span class="badge">Source <b>Miami-Dade PA roll API</b></span>`,

@@ -1,23 +1,16 @@
-// Step 1 — Enumerate every parcel (folio) in ZIP 33149.
+// Step 1 — Enumerate every parcel (folio) for one or more ZIP codes.
 //
-// NOTE ON SOURCE: The CLAUDE.md spec points at the UM GDSC mirror
-// (arcgis.gdsc.miami.edu .../mdc_property_point_view). As of this build that
-// mirror's query backend is DEAD — metadata loads but every /query returns
-// HTTP 400 "Unable to perform query operation", and its service description is
-// frozen at "Last Updated: April 12, 2023". We pivot to Miami-Dade County's
-// own live ArcGIS: the Property Appraiser GIS layer "Property @ PaGis"
-// (MD_LandInformation/MapServer/24). Same underlying MDC property roll, same
-// field names (folio, dor_code_cur, dor_desc, condo_flag, true_site_*).
+// SOURCE: Miami-Dade County live ArcGIS (PaGis, MD_LandInformation layer 24).
+// The UM GDSC mirror in the original spec is dead; PaGis is the equivalent
+// live layer (same MDC roll, same field names). Its value fields are NULL —
+// per-folio assessed/taxable/exemption come from Step 2 (PA proxy API).
 //
-// IMPORTANT: PaGis value fields (LAND/BUILDING/TOTAL_VAL_CUR) are NULL for
-// 33149, so this step only yields the parcel UNIVERSE (folio + address + DOR +
-// condo flag). Assessed / taxable / exemption values come in Step 2 from the
-// Property Appraiser per-folio roll API.
+// ZIPs are configurable via CLI or env: node 01_fetch_parcels.mjs 33149 33156
+// or ZIPS="33149,33156" node 01_fetch_parcels.mjs. Default = 33149,33156.
 //
-// Output: data/raw/parcels_33149_raw.json  (verbatim attributes)
-//         data/raw/parcels_33149.csv       (flattened)
-//         data/raw/parcels_meta.json       (fetch provenance)
-// Run: node pipeline/01_fetch_parcels.mjs
+// Output: data/raw/parcels.json  (combined; each record has a `zip` field)
+//         data/raw/parcels.csv   (flattened, same set)
+//         data/raw/parcels_meta.json (per-zip + total counts, DOR breakdown)
 
 import { writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -27,9 +20,12 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const RAW_DIR = join(ROOT, "data", "raw");
 mkdirSync(RAW_DIR, { recursive: true });
 
-const LAYER =
-  "https://gisweb.miamidade.gov/arcgis/rest/services/MD_LandInformation/MapServer/24/query";
-const WHERE = "TRUE_SITE_ZIP_CODE LIKE '33149%'";
+const argsZips = process.argv.slice(2).filter((a) => /^\d{5}$/.test(a));
+const ZIPS = argsZips.length
+  ? argsZips
+  : (process.env.ZIPS || "33149,33156").split(",").map((s) => s.trim()).filter((s) => /^\d{5}$/.test(s));
+
+const LAYER = "https://gisweb.miamidade.gov/arcgis/rest/services/MD_LandInformation/MapServer/24/query";
 const OUT_FIELDS = [
   "OBJECTID", "FOLIO", "TRUE_SITE_ADDR", "TRUE_SITE_CITY", "TRUE_SITE_ZIP_CODE",
   "DOR_CODE_CUR", "DOR_DESC", "CONDO_FLAG", "PARENT_FOLIO", "PRIMARY_ZONE",
@@ -39,11 +35,8 @@ const OUT_FIELDS = [
 const PAGE = 1000;
 
 function qs(params) {
-  return Object.entries(params)
-    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
-    .join("&");
+  return Object.entries(params).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join("&");
 }
-
 async function getJSON(params, tries = 4) {
   const url = `${LAYER}?${qs(params)}`;
   for (let i = 0; i < tries; i++) {
@@ -60,41 +53,52 @@ async function getJSON(params, tries = 4) {
   }
 }
 
-async function getCount() {
-  const b = await getJSON({ where: WHERE, returnCountOnly: "true", f: "json" });
-  return b.count ?? null;
-}
-
-// Keyset pagination on OBJECTID — robust even where resultOffset isn't honored.
-async function fetchAll() {
-  console.log(`Source: PaGis layer 24 | where ${WHERE}`);
-  const expected = await getCount();
-  console.log(`  server reports ${expected} parcels`);
-
+async function fetchZip(zip) {
+  const where = `TRUE_SITE_ZIP_CODE LIKE '${zip}%'`;
+  const b = await getJSON({ where, returnCountOnly: "true", f: "json" });
+  const expected = b.count ?? null;
+  console.log(`\n[${zip}] server reports ${expected} parcels`);
   const rows = [];
   let lastOid = -1;
   for (;;) {
-    const b = await getJSON({
-      where: `(${WHERE}) AND OBJECTID > ${lastOid}`,
+    const body = await getJSON({
+      where: `(${where}) AND OBJECTID > ${lastOid}`,
       outFields: OUT_FIELDS.join(","),
       returnGeometry: "false",
       f: "json",
       resultRecordCount: String(PAGE),
       orderByFields: "OBJECTID ASC",
     });
-    const page = (b.features || []).map((f) => f.attributes);
+    const page = (body.features || []).map((f) => ({ ...f.attributes, zip }));
     if (page.length === 0) break;
     for (const r of page) rows.push(r);
     lastOid = page[page.length - 1].OBJECTID;
-    console.log(`  +${page.length} (total ${rows.length}), lastOID=${lastOid}`);
+    console.log(`  [${zip}] +${page.length} (${rows.length}), lastOID=${lastOid}`);
     if (page.length < PAGE) break;
   }
-  return { rows, expected };
+  if (expected != null && rows.length !== expected)
+    console.warn(`  [${zip}] WARNING: fetched ${rows.length} != reported ${expected}`);
+  return { zip, expected, rows };
+}
+
+console.log(`Fetching parcels for ZIPs: ${ZIPS.join(", ")}`);
+const perZip = [];
+for (const zip of ZIPS) perZip.push(await fetchZip(zip));
+
+// combine + dedupe by folio (defensive)
+const seen = new Set();
+const combined = [];
+for (const { rows } of perZip) {
+  for (const r of rows) {
+    if (seen.has(r.FOLIO)) continue;
+    seen.add(r.FOLIO);
+    combined.push(r);
+  }
 }
 
 function toCSV(rows) {
   if (!rows.length) return "";
-  const cols = OUT_FIELDS;
+  const cols = [...OUT_FIELDS, "zip"];
   const esc = (v) => {
     if (v === null || v === undefined) return "";
     const s = String(v);
@@ -102,40 +106,22 @@ function toCSV(rows) {
   };
   return [cols.join(","), ...rows.map((r) => cols.map((c) => esc(r[c])).join(","))].join("\r\n");
 }
+writeFileSync(join(RAW_DIR, "parcels.json"), JSON.stringify(combined, null, 2));
+writeFileSync(join(RAW_DIR, "parcels.csv"), toCSV(combined));
 
-const { rows, expected } = await fetchAll();
-if (expected != null && rows.length !== expected)
-  console.warn(`  WARNING: fetched ${rows.length} != reported ${expected}`);
-
-// dedupe by folio (defensive)
-const seen = new Set();
-const deduped = rows.filter((r) => (seen.has(r.FOLIO) ? false : (seen.add(r.FOLIO), true)));
-
-writeFileSync(join(RAW_DIR, "parcels_33149_raw.json"), JSON.stringify(deduped, null, 2));
-writeFileSync(join(RAW_DIR, "parcels_33149.csv"), toCSV(deduped));
-
-const dor = {};
-for (const r of deduped) {
-  const k = `${r.DOR_CODE_CUR} ${r.DOR_DESC}`;
-  dor[k] = (dor[k] || 0) + 1;
+const perZipMeta = {};
+for (const { zip, expected, rows } of perZip) {
+  const dor = {};
+  for (const r of rows) {
+    const k = `${r.DOR_CODE_CUR} ${r.DOR_DESC}`;
+    dor[k] = (dor[k] || 0) + 1;
+  }
+  perZipMeta[zip] = { parcel_count: rows.length, server_reported: expected, dor_distribution: dor };
 }
-writeFileSync(
-  join(RAW_DIR, "parcels_meta.json"),
-  JSON.stringify(
-    {
-      fetched_at: new Date().toISOString(),
-      source: LAYER,
-      source_note:
-        "GDSC mirror dead (query backend 400s); using live Miami-Dade County PaGis layer 24. Values are sourced separately in Step 2 (PaGis value fields are null).",
-      where: WHERE,
-      parcel_count: deduped.length,
-      server_reported_count: expected,
-      dor_distribution: dor,
-    },
-    null,
-    2
-  )
-);
+writeFileSync(join(RAW_DIR, "parcels_meta.json"), JSON.stringify({
+  fetched_at: new Date().toISOString(), source: LAYER, zips: ZIPS,
+  total_parcels: combined.length, per_zip: perZipMeta,
+}, null, 2));
 
-console.log(`\n=== DONE === ${deduped.length} parcels`);
-console.log("Wrote data/raw/parcels_33149_raw.json, parcels_33149.csv, parcels_meta.json");
+console.log(`\n=== DONE === ${combined.length} unique parcels across ${ZIPS.length} zip(s)`);
+console.log("Wrote data/raw/parcels.json, parcels.csv, parcels_meta.json");

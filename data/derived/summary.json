@@ -1,92 +1,109 @@
 {
-  "generated_at": "2026-05-28T13:21:43.048Z",
+  "generated_at": "2026-08-31T19:39:57.250Z",
   "defaults": {
     "millage": 15.6226,
     "village_only_millage": 2.9794,
     "exemption_presets": [
+      100000,
       250000,
       500000
     ],
     "published_kb_taxable_2025": 11600000000
   },
-  "roll_year": 2025,
+  "roll_year": 2026,
+  "zips": [
+    "33149",
+    "33156"
+  ],
   "counts": {
-    "parcels": 7431,
-    "valid_roll": 7431,
+    "parcels": 20305,
+    "valid_roll": 20305,
     "missing_roll": 0,
-    "homestead": 2892,
-    "non_homestead": 4539,
+    "homestead": 10545,
+    "non_homestead": 9760,
     "key_biscayne_parcels": 7383
   },
   "taxable_totals": {
-    "all_33149": 11554710268,
-    "homestead": 4102088704,
-    "non_homestead": 7452621564,
-    "key_biscayne_only": 11537650741
+    "all": 29435212684,
+    "homestead": 13199652328,
+    "non_homestead": 16235560356,
+    "key_biscayne_only": 12203799105
   },
   "validation": {
     "published_kb_taxable_2025": 11600000000,
-    "computed_kb_taxable": 11537650741,
+    "computed_kb_taxable": 12203799105,
     "note": "Computed KB-municipality taxable should land near the published $11.6B record base."
   },
   "by_class": [
     {
-      "class": "Condominium",
-      "count": 5622,
-      "homestead_count": 1972,
-      "taxable": 6572695252
+      "class": "Single Family",
+      "count": 9186,
+      "homestead_count": 7304,
+      "taxable": 17105794156
     },
     {
-      "class": "Single Family",
-      "count": 1288,
-      "homestead_count": 866,
-      "taxable": 4018803227
+      "class": "Condominium",
+      "count": 9402,
+      "homestead_count": 3101,
+      "taxable": 7859012298
     },
     {
       "class": "Commercial",
-      "count": 158,
+      "count": 633,
       "homestead_count": 0,
-      "taxable": 562032849
+      "taxable": 2662573630
     },
     {
       "class": "Vacant Residential",
-      "count": 55,
-      "homestead_count": 4,
-      "taxable": 260800023
+      "count": 318,
+      "homestead_count": 17,
+      "taxable": 1034545941
+    },
+    {
+      "class": "Multifamily",
+      "count": 156,
+      "homestead_count": 60,
+      "taxable": 468146398
     },
     {
       "class": "Cooperative",
       "count": 130,
-      "homestead_count": 48,
-      "taxable": 105994812
+      "homestead_count": 47,
+      "taxable": 104995310
     },
     {
-      "class": "Other",
-      "count": 17,
+      "class": "Industrial",
+      "count": 21,
       "homestead_count": 0,
-      "taxable": 18773742
-    },
-    {
-      "class": "Multifamily",
-      "count": 6,
-      "homestead_count": 2,
-      "taxable": 15605118
+      "taxable": 71797795
     },
     {
       "class": "Institutional",
-      "count": 10,
+      "count": 38,
       "homestead_count": 0,
-      "taxable": 5245
+      "taxable": 59431958
+    },
+    {
+      "class": "Other",
+      "count": 96,
+      "homestead_count": 15,
+      "taxable": 51599337
+    },
+    {
+      "class": "Other Residential",
+      "count": 3,
+      "homestead_count": 1,
+      "taxable": 16782525
     },
     {
       "class": "Government",
-      "count": 53,
+      "count": 167,
       "homestead_count": 0,
-      "taxable": 0
+      "taxable": 533336
     },
     {
       "class": "Reference Folio",
-      "count": 92,
+      "count": 155,
       "homestead_count": 0,
       "taxable": 0
     }
@@ -95,47 +112,181 @@
     {
       "muni": "Key Biscayne",
       "count": 7383,
-      "taxable": 11537650741
+      "taxable": 12203799105,
+      "homestead_count": 2823
+    },
+    {
+      "muni": "Pinecrest",
+      "count": 6456,
+      "taxable": 8772922944,
+      "homestead_count": 4486
+    },
+    {
+      "muni": "Coral Gables",
+      "count": 1254,
+      "taxable": 4942015769,
+      "homestead_count": 883
+    },
+    {
+      "muni": "Unincorporated County",
+      "count": 5129,
+      "taxable": 3454807438,
+      "homestead_count": 2315
+    },
+    {
+      "muni": "South Miami",
+      "count": 23,
+      "taxable": 26673214,
+      "homestead_count": 15
     },
     {
       "muni": "Miami",
       "count": 32,
-      "taxable": 17059527
+      "taxable": 18907800,
+      "homestead_count": 0
     },
     {
-      "muni": "Unincorporated County",
-      "count": 16,
-      "taxable": 0
+      "muni": "Palmetto Bay",
+      "count": 28,
+      "taxable": 16086414,
+      "homestead_count": 23
     }
   ],
+  "by_zip": {
+    "33149": {
+      "zip": "33149",
+      "count": 7431,
+      "homestead": 2823,
+      "taxable": 12222706905,
+      "municipalities": [
+        "Key Biscayne",
+        "Miami",
+        "Unincorporated County"
+      ],
+      "scenarios": {
+        "baseline": {
+          "label": "Baseline (current)",
+          "revenue": 190950461,
+          "revenue_lost": 0,
+          "pct_base_eroded": 0,
+          "parcels_fully_tax_free": 0
+        },
+        "e100": {
+          "label": "$100K homestead exemption",
+          "revenue": 186561037,
+          "revenue_lost": 4389424,
+          "pct_base_eroded": 0.022987240648391312,
+          "parcels_fully_tax_free": 10
+        },
+        "e250": {
+          "label": "$250K homestead exemption",
+          "revenue": 180131979,
+          "revenue_lost": 10818482,
+          "pct_base_eroded": 0.0566559610225697,
+          "parcels_fully_tax_free": 177
+        },
+        "e500": {
+          "label": "$500K homestead exemption",
+          "revenue": 170777724,
+          "revenue_lost": 20172737,
+          "pct_base_eroded": 0.1056438232574975,
+          "parcels_fully_tax_free": 733
+        },
+        "full": {
+          "label": "Full elimination (homestead)",
+          "revenue": 125759444,
+          "revenue_lost": 65191017,
+          "pct_base_eroded": 0.34140277554172094,
+          "parcels_fully_tax_free": 2813
+        }
+      }
+    },
+    "33156": {
+      "zip": "33156",
+      "count": 12874,
+      "homestead": 7722,
+      "taxable": 17212505779,
+      "municipalities": [
+        "Coral Gables",
+        "Palmetto Bay",
+        "Pinecrest",
+        "South Miami",
+        "Unincorporated County"
+      ],
+      "scenarios": {
+        "baseline": {
+          "label": "Baseline (current)",
+          "revenue": 268904093,
+          "revenue_lost": 0,
+          "pct_base_eroded": 0,
+          "parcels_fully_tax_free": 0
+        },
+        "e100": {
+          "label": "$100K homestead exemption",
+          "revenue": 257156828,
+          "revenue_lost": 11747264,
+          "pct_base_eroded": 0.04368570356079569,
+          "parcels_fully_tax_free": 321
+        },
+        "e250": {
+          "label": "$250K homestead exemption",
+          "revenue": 240951854,
+          "revenue_lost": 27952238,
+          "pct_base_eroded": 0.10394872826609784,
+          "parcels_fully_tax_free": 1259
+        },
+        "e500": {
+          "label": "$500K homestead exemption",
+          "revenue": 219746249,
+          "revenue_lost": 49157844,
+          "pct_base_eroded": 0.18280809165153203,
+          "parcels_fully_tax_free": 3036
+        },
+        "full": {
+          "label": "Full elimination (homestead)",
+          "revenue": 127882222,
+          "revenue_lost": 141021871,
+          "pct_base_eroded": 0.5244318509983064,
+          "parcels_fully_tax_free": 7661
+        }
+      }
+    }
+  },
   "scenarios_at_default_millage": {
     "baseline": {
       "label": "Baseline (current)",
-      "revenue": 180514617,
+      "revenue": 459854554,
       "revenue_lost": 0,
       "pct_base_eroded": 0,
       "parcels_fully_tax_free": 0
     },
+    "e100": {
+      "label": "$100K homestead exemption",
+      "revenue": 443717865,
+      "revenue_lost": 16136689,
+      "pct_base_eroded": 0.03509085329495265,
+      "parcels_fully_tax_free": 331
+    },
     "e250": {
       "label": "$250K homestead exemption",
-      "revenue": 169460422,
-      "revenue_lost": 11054195,
-      "pct_base_eroded": 0.06123711591104365,
-      "parcels_fully_tax_free": 198
+      "revenue": 421083833,
+      "revenue_lost": 38770720,
+      "pct_base_eroded": 0.0843108326969483,
+      "parcels_fully_tax_free": 1436
     },
     "e500": {
       "label": "$500K homestead exemption",
-      "revenue": 160020447,
-      "revenue_lost": 20494169,
-      "pct_base_eroded": 0.11353191119236006,
-      "parcels_fully_tax_free": 798
+      "revenue": 390523973,
+      "revenue_lost": 69330581,
+      "pct_base_eroded": 0.15076632432189377,
+      "parcels_fully_tax_free": 3769
     },
     "full": {
       "label": "Full elimination (homestead)",
-      "revenue": 116429326,
-      "revenue_lost": 64085291,
-      "pct_base_eroded": 0.35501441480194496,
-      "parcels_fully_tax_free": 2880
+      "revenue": 253641665,
+      "revenue_lost": 206212888,
+      "pct_base_eroded": 0.44843067620078314,
+      "parcels_fully_tax_free": 10474
     }
   }
 }
