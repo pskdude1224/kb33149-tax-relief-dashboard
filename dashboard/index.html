@@ -185,9 +185,10 @@
             <span class="cta-sub">Free · no sign-up · public data</span>
           </div>
           <div class="stats reveal" id="stats" style="animation-delay:.36s">
-            <div class="stat"><div class="v">2025</div><div class="k">Certified roll</div></div>
-            <div class="stat"><div class="v">7,431</div><div class="k">Parcels analyzed</div></div>
-            <div class="stat"><div class="v">2,892</div><div class="k">Homesteads</div></div>
+            <div class="stat"><div class="v">2026</div><div class="k">Certified roll</div></div>
+            <div class="stat"><div class="v">217,178</div><div class="k">Parcels analyzed</div></div>
+            <div class="stat"><div class="v">118,076</div><div class="k">Homesteads</div></div>
+            <div class="stat"><div class="v">18</div><div class="k">ZIP codes</div></div>
           </div>
         </div>
 
@@ -277,6 +278,7 @@
           { v: S.roll_year, k: "Certified roll" },
           { v: f0(S.counts.parcels), k: "Parcels analyzed" },
           { v: f0(S.counts.homestead), k: "Homesteads" },
+          { v: (S.zips && S.zips.length) || "—", k: "ZIP codes" },
         ].map(s => `<div class="stat"><div class="v">${s.v}</div><div class="k">${s.k}</div></div>`).join("");
 
         const sc = S.scenarios_at_default_millage;
