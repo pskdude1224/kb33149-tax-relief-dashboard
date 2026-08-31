@@ -10,3 +10,4 @@ data/raw/pa_*.json
 
 # Redundant with dashboard/data.js (which the site actually serves)
 data/derived/parcels_modeled.json
+*.jsonl

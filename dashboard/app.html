@@ -262,6 +262,20 @@
     <div class="brand"><span class="dot"></span> SaveOur.Homes <small id="brandZips">· Miami-Dade</small></div>
     <a class="navlink" href="./">← Back to intro</a>
   </nav>
+
+  <!-- ZIP PICKER (top of page) -->
+  <section class="zipbar">
+    <div class="zipbar-row">
+      <span class="zipbar-lbl">ZIP codes covered</span>
+      <span class="zipbar-info" id="zipCountLabel"></span>
+      <div class="zipbar-actions">
+        <button id="zipAll" type="button">Select all</button>
+        <button id="zipNone" type="button">Clear</button>
+      </div>
+    </div>
+    <div class="zips" id="zipPicker"></div>
+  </section>
+
   <header>
     <span class="eyebrow"><span class="pulse"></span> Florida ballot measure · November 2026</span>
     <h1>Property Tax Relief Impact</h1>
@@ -296,19 +310,6 @@
       </ul>
     </div>
   </details>
-
-  <!-- ZIP PICKER (full width) -->
-  <section class="zipbar">
-    <div class="zipbar-row">
-      <span class="zipbar-lbl">ZIP codes</span>
-      <span class="zipbar-info" id="zipCountLabel"></span>
-      <div class="zipbar-actions">
-        <button id="zipAll" type="button">Select all</button>
-        <button id="zipNone" type="button">Clear</button>
-      </div>
-    </div>
-    <div class="zips" id="zipPicker"></div>
-  </section>
 
   <!-- CONTROLS -->
   <div class="controls">
