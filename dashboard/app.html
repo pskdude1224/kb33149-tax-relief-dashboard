@@ -4,14 +4,14 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Key Biscayne (33149) — Property Tax Relief Impact</title>
-<meta name="description" content="Interactive model of how Florida's proposed homestead exemption would affect the Key Biscayne (ZIP 33149) tax base. Search your address to see your estimated change." />
+<meta name="description" content="Interactive model of Florida Amendment 3 (Nov 2026) — $150K homestead exemption in 2027 rising to $250K in 2028 — across 18 South Miami-Dade ZIP codes. Search your address to see your estimated change." />
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <meta name="theme-color" content="#070b11" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="See Our Homes" />
 <meta property="og:url" content="https://saveour.homes/app.html" />
-<meta property="og:title" content="Key Biscayne Tax Relief — find your home" />
-<meta property="og:description" content="Search your Key Biscayne (ZIP 33149) address to see how Florida's proposed homestead exemption could change your property tax — $250K, $500K, or full elimination." />
+<meta property="og:title" content="Amendment 3 — find your home" />
+<meta property="og:description" content="Search your South Miami-Dade address to see how Amendment 3 (Nov 2026) — a $150K homestead exemption in 2027, rising to $250K in 2028 — would change your property tax." />
 <meta property="og:image" content="https://saveour.homes/og.jpg" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:image" content="https://saveour.homes/og.jpg" />
@@ -97,8 +97,18 @@
   .chip:hover { border-color: var(--accent); color: var(--ink); }
   .chip.on { background: linear-gradient(100deg, rgba(70,166,255,.22), rgba(45,212,191,.22)); border-color: rgba(45,212,191,.6); color: var(--ink); }
   .scn-name { font-size: 13px; color: var(--amber); margin-top: 9px; min-height: 18px; }
-  /* ZIP multi-select (inside Geography card) */
-  .zips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  /* ZIP multi-select bar (full width, above the controls row) */
+  .zipbar { margin-top: 18px; padding: 14px 16px; background: var(--glass);
+    border: 1px solid var(--glassline); border-radius: 14px;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .zipbar-row { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; flex-wrap: wrap; }
+  .zipbar-lbl { font-size: 12px; color: var(--mut); text-transform: uppercase; letter-spacing: .5px; font-weight: 700; }
+  .zipbar-info { color: var(--mut2); font-size: 12px; }
+  .zipbar-actions { display: flex; gap: 6px; margin-left: auto; }
+  .zipbar-actions button { background: transparent; border: 1px solid var(--line); color: var(--mut);
+    border-radius: 7px; padding: 4px 11px; font-size: 12px; cursor: pointer; }
+  .zipbar-actions button:hover { color: var(--ink); border-color: rgba(70,166,255,.5); }
+  .zips { display: flex; gap: 7px; flex-wrap: wrap; }
   .zips label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
     background: var(--panel2); border: 1px solid var(--line); border-radius: 999px;
     padding: 6px 12px; font-size: 13px; color: var(--mut); user-select: none; }
@@ -255,7 +265,7 @@
   <header>
     <span class="eyebrow"><span class="pulse"></span> Florida ballot measure · November 2026</span>
     <h1>Property Tax Relief Impact</h1>
-    <div class="sub">How the proposed homestead exemption (“Save Our Homes from Excessive Property Taxes”) would affect local tax bases across <b>ZIP 33149 (Key Biscayne)</b> and <b>ZIP 33156 (Pinecrest area)</b> — parcel by parcel.</div>
+    <div class="sub">How the proposed homestead exemption (“Save Our Homes from Excessive Property Taxes”) would affect local tax bases across <b>South Miami-Dade</b> — from Coral Gables and Key Biscayne through Pinecrest, Kendall, Palmetto Bay, and Cutler Bay down to Homestead. <b>18 ZIP codes, 200,000+ parcels.</b> Toggle the ZIPs below to scope the model to your area.</div>
     <div class="badges" id="badges"></div>
   </header>
 
@@ -276,37 +286,47 @@
     <summary>Data sources &amp; modeling assumptions (read me)</summary>
     <div class="body">
       <ul>
-        <li><b>Parcel universe:</b> all folios in the selected ZIP codes (33149 Key Biscayne, 33156 Pinecrest area), pulled from Miami-Dade County's live ArcGIS “Property @ PaGis” layer. Toggle the ZIP checkboxes below to change scope.</li>
+        <li><b>Parcel universe:</b> every folio across 18 South Miami-Dade ZIP codes — from Coral Gables and Key Biscayne through Pinecrest, Kendall, Palmetto Bay, and Cutler Bay to Homestead — pulled from Miami-Dade County's live ArcGIS “Property @ PaGis” layer. Toggle the ZIP checkboxes at the top of the page to change scope.</li>
         <li><b>Values &amp; exemptions:</b> per-folio from the Miami-Dade Property Appraiser public roll API (certified <b id="rollyr2">2025</b> roll). The GIS layers carry <i>no</i> exemption flag or taxable value — this API is the source for both.</li>
         <li><b>Taxable base used:</b> the <b>non-school local taxable value</b> (county/municipal taxable, after current exemptions). This is the base the local municipality + Miami-Dade county millages levy on. School taxable differs slightly (the extra $25K homestead exemption doesn't apply to schools) and is excluded from this model's base.</li>
         <li><b>Millage caveat:</b> a single combined millage is applied across all selected parcels. Each municipality (Key Biscayne, Pinecrest, Coral Gables, Unincorporated, etc.) actually has a slightly different combined rate. Filter to one municipality to get its accurate estimate.</li>
-        <li><b>The bill:</b> exempts the first $250K (then $500K, then all) of a <b>homestead's</b> value from taxation. Modeled as: reduce each homestead's taxable value by the exemption (floor $0); non-homestead residential &amp; commercial are <b>unchanged</b> in every scenario.</li>
-        <li><b>Millage default 15.6226 mills</b> = combined Village + County + School + special districts (2025). Village-of-KB-only operating millage is 2.9794. Both editable below.</li>
+        <li><b>The ballot — Florida Amendment 3 (Nov 3, 2026):</b> raises the homestead exemption for <b>non-school local property taxes</b> to <b>$150,000 in 2027</b>, then <b>$250,000 in 2028+</b> (inflation-adjusted after). Schools keep the current $25K homestead exemption unchanged. Also caps annual non-homestead assessment growth at 5% (down from 10%) and restricts what local governments can spend property tax on. Modeled here: reduce each homestead's non-school taxable value by the exemption (floor $0). Non-homestead property is <b>unchanged</b> in this snapshot; the 5% cap is a future-growth constraint not modeled at a single point in time.</li>
+        <li><b>Millage default 9.0 mills</b> = approximate KB non-school local (Village + Miami-Dade County non-school + special districts). This is what the amendment actually reduces. The combined-with-school rate (~15.6 in KB) is a preset if you want to see the full local + school picture, but note the amendment doesn't touch the school portion.</li>
         <li><b>Validation:</b> summed Key-Biscayne-municipality taxable ≈ <span id="valnote"></span>, vs the published $11.6B record base — a close match.</li>
       </ul>
     </div>
   </details>
 
+  <!-- ZIP PICKER (full width) -->
+  <section class="zipbar">
+    <div class="zipbar-row">
+      <span class="zipbar-lbl">ZIP codes</span>
+      <span class="zipbar-info" id="zipCountLabel"></span>
+      <div class="zipbar-actions">
+        <button id="zipAll" type="button">Select all</button>
+        <button id="zipNone" type="button">Clear</button>
+      </div>
+    </div>
+    <div class="zips" id="zipPicker"></div>
+  </section>
+
   <!-- CONTROLS -->
   <div class="controls">
     <div class="card ctl ctl-exempt">
-      <label>New homestead exemption</label>
+      <label>Amendment 3 — new homestead exemption</label>
       <div class="row">
-        <input type="range" id="exRange" min="0" max="2000000" step="25000" value="250000" />
-        <input type="number" id="exNum" min="0" max="5000000" step="25000" value="250000" />
+        <input type="range" id="exRange" min="0" max="500000" step="10000" value="150000" />
+        <input type="number" id="exNum" min="0" max="1000000" step="10000" value="150000" />
       </div>
       <div class="presets">
-        <span class="chip" data-ex="100000">$100K</span>
-        <span class="chip" data-ex="250000">$250K</span>
-        <span class="chip" data-ex="500000">$500K</span>
-        <span class="chip" id="fullElim" data-full="1">Full elimination</span>
+        <span class="chip" data-ex="150000">$150K · 2027</span>
+        <span class="chip" data-ex="250000">$250K · 2028+</span>
       </div>
       <div class="scn-name" id="scnName"></div>
     </div>
 
     <div class="card ctl">
-      <label>Geography</label>
-      <div class="zips" id="zipPicker"></div>
+      <label>Municipality</label>
       <select id="geo"><option value="all">All municipalities</option></select>
       <div class="presets" id="geoCount" style="margin-top:9px"></div>
     </div>
@@ -314,10 +334,11 @@
     <div class="card ctl">
       <label>Combined millage rate (mills)</label>
       <div class="row">
-        <input type="range" id="milRange" min="0" max="25" step="0.0001" value="15.6226" />
-        <input type="number" id="milNum" min="0" max="40" step="0.0001" value="15.6226" />
+        <input type="range" id="milRange" min="0" max="25" step="0.0001" value="9.0" />
+        <input type="number" id="milNum" min="0" max="40" step="0.0001" value="9.0" />
       </div>
       <div class="presets">
+        <span class="chip" data-mil="9.0">Non-school ~9.0</span>
         <span class="chip" data-mil="15.6226">Combined 15.6226</span>
         <span class="chip" data-mil="2.9794">Village only 2.9794</span>
       </div>
@@ -399,7 +420,7 @@ const fAbbr = (n) => {
 const fPct = (x) => (x * 100).toFixed(1) + "%";
 
 // ---------- state ----------
-const st = { zips: new Set(), geo: "all", millage: D.millage, exemption: 250000, full: false,
+const st = { zips: new Set(), geo: "all", millage: D.millage, exemption: 150000,
              search: "", fCls: "", fHs: "", sort: "taxable", dir: -1, page: 0, per: 100 };
 
 // ---------- ZIP + municipality filter ----------
@@ -409,23 +430,32 @@ function geoMatch(r) {
   return (r.muni || "") === st.geo;
 }
 function activeParcels() { return P.filter(geoMatch); }
-// Human-readable ZIP labels (used in checkbox text + brand chip)
-const ZIP_LABELS = { "33149": "33149 · Key Biscayne", "33156": "33156 · Pinecrest" };
+// Human-readable ZIP labels (used in checkbox text)
+const ZIP_LABELS = {
+  "33149": "33149 · Key Biscayne",     "33156": "33156 · Pinecrest",
+  "33143": "33143 · South Miami",       "33146": "33146 · Coral Gables",
+  "33157": "33157 · Palmetto Bay",      "33158": "33158 · Palmetto Bay",
+  "33170": "33170 · Perrine / Redland", "33176": "33176 · Kendall",
+  "33186": "33186 · West Kendall",      "33189": "33189 · Cutler Bay",
+  "33190": "33190 · South Miami-Dade",  "33196": "33196 · West Kendall",
+  "33030": "33030 · Homestead",         "33032": "33032 · Homestead / Naranja",
+  "33033": "33033 · Homestead",         "33034": "33034 · Florida City",
+  "33035": "33035 · Homestead",         "33039": "33039 · Naranja",
+};
 
 // ---------- scenario engine (mirrors pipeline/03_build_model.mjs) ----------
 const taxOf = (taxable, mil) => taxable * (mil / 1000);
-function scnTax(r, mil, ex, full) {
+function scnTax(r, mil, ex) {
   if (!r.homestead) return taxOf(r.taxable, mil);
-  if (full) return 0;
   return taxOf(Math.max(0, r.taxable - ex), mil);
 }
-// aggregate a parcel set under (mil, ex, full); returns {rev, base, lost, pct, free, hsBase, nhBase}
-function aggregate(rows, mil, ex, full) {
+// aggregate a parcel set under (mil, ex); returns {rev, base, lost, pct, free, hsBase, nhBase}
+function aggregate(rows, mil, ex) {
   let rev = 0, base = 0, free = 0, hsBase = 0, nhBase = 0;
   for (const r of rows) {
     const b = taxOf(r.taxable, mil); base += b;
-    rev += scnTax(r, mil, ex, full);
-    if (r.homestead) { hsBase += r.taxable; if (scnTax(r, mil, ex, full) === 0 && r.taxable > 0) free++; }
+    const t = scnTax(r, mil, ex); rev += t;
+    if (r.homestead) { hsBase += r.taxable; if (t === 0 && r.taxable > 0) free++; }
     else nhBase += r.taxable;
   }
   return { rev, base, lost: base - rev, pct: base > 0 ? (base - rev) / base : 0, free, hsBase, nhBase };
@@ -434,12 +464,12 @@ function aggregate(rows, mil, ex, full) {
 // ---------- render ----------
 function render() {
   const rows = activeParcels();
-  const cur = aggregate(rows, st.millage, st.full ? 0 : st.exemption, st.full);
+  const cur = aggregate(rows, st.millage, st.exemption);
 
-  // scenario name
-  document.getElementById("scnName").textContent = st.full
-    ? "Scenario: full homestead elimination"
-    : "Scenario: " + fAbbr(st.exemption) + " homestead exemption";
+  // scenario name (with ballot-year hint when the amount matches an amendment year)
+  const yearHint = st.exemption === 150000 ? " (2027, Year 1)"
+    : st.exemption === 250000 ? " (2028+, steady state)" : "";
+  document.getElementById("scnName").textContent = "Scenario: " + fAbbr(st.exemption) + " homestead exemption" + yearHint;
 
   // KPIs
   const hsCount = rows.filter(r => r.homestead).length;
@@ -510,25 +540,25 @@ function renderHome() {
   if (!r) { box.innerHTML = ""; return; }
   const m = st.millage;
   const base = taxOf(r.taxable, m);
+  // Amendment 3 — two ballot years
   const scn = [
-    { lab: "$100K exemption", ex: 100000, full: false },
-    { lab: "$250K exemption", ex: 250000, full: false },
-    { lab: "$500K exemption", ex: 500000, full: false },
-    { lab: "Full elimination", ex: 0, full: true },
+    { lab: "Baseline (current)", ex: 0 },
+    { lab: "2027 · $150K exempt", ex: 150000 },
+    { lab: "2028+ · $250K exempt", ex: 250000 },
   ].map(s => {
-    const nt = scnTax(r, m, s.ex, s.full);
+    const nt = scnTax(r, m, s.ex);
     const chg = nt - base;
     return { ...s, nt, chg, pct: base > 0 ? chg / base : 0 };
   });
 
   let headline;
   if (!r.homestead) {
-    headline = `This property <b>isn't homesteaded</b>, so the proposed homestead exemption wouldn't change its property tax. (If it's your primary residence, you may qualify for a homestead exemption — which would then be affected.)`;
+    headline = `This property <b>isn't homesteaded</b>, so <b>Amendment 3 wouldn't change</b> its property tax. (If it's your primary residence, you may qualify for a homestead exemption — which the amendment would then raise.)`;
   } else if (base <= 0) {
     headline = `This homestead already has <b>$0</b> local taxable value, so its local tax is already $0.`;
   } else {
-    const s1 = scn.find(s => s.ex === 250000) || scn[0];
-    headline = `Under the bill's first step (<b>$250K exemption</b>), your estimated local property tax would drop about <span class="big">${fPct(-s1.pct)}</span> — roughly <span class="big">${fUSD(-s1.chg)}/yr</span>. Under full elimination you'd pay <span class="big">$0</span>.`;
+    const s2027 = scn.find(s => s.ex === 150000), s2028 = scn.find(s => s.ex === 250000);
+    headline = `Under Amendment 3, your estimated non-school local property tax would drop about <span class="big">${fPct(-s2027.pct)}</span> in <b>2027</b> (~<span class="big">${fUSD(-s2027.chg)}/yr</span>) and about <span class="big">${fPct(-s2028.pct)}</span> in <b>2028+</b> (~<span class="big">${fUSD(-s2028.chg)}/yr</span>).`;
   }
 
   box.innerHTML = `<div class="fh-result">
@@ -556,19 +586,17 @@ function renderHome() {
 }
 
 function renderChart(rows, cur) {
+  // Amendment 3 scenarios (Nov 2026 ballot)
   const defs = [
-    { lab: "Baseline (current)", ex: 0, full: false },
-    { lab: "$100K homestead exemption", ex: 100000, full: false },
-    { lab: "$250K homestead exemption", ex: 250000, full: false },
-    { lab: "$500K homestead exemption", ex: 500000, full: false },
-    { lab: "Full elimination (homestead)", ex: 0, full: true },
+    { lab: "Baseline (current $25K/$50K homestead)", ex: 0 },
+    { lab: "2027 · $150K homestead exemption", ex: 150000 },
+    { lab: "2028+ · $250K homestead exemption", ex: 250000 },
   ];
-  // current custom scenario (only show if not exactly a preset)
-  const isPreset = !st.full && (st.exemption === 100000 || st.exemption === 250000 || st.exemption === 500000);
-  const items = defs.map(d => ({ ...d, ...aggregate(rows, st.millage, d.ex, d.full) }));
+  const isPreset = st.exemption === 150000 || st.exemption === 250000 || st.exemption === 0;
+  const items = defs.map(d => ({ ...d, ...aggregate(rows, st.millage, d.ex) }));
   let currentItem = null;
   if (!isPreset) {
-    currentItem = { lab: (st.full ? "Full elimination" : fAbbr(st.exemption) + " exemption") + " · current", current: true, ...cur };
+    currentItem = { lab: fAbbr(st.exemption) + " exemption · custom", current: true, ...cur };
   }
   const all = currentItem ? [...items.slice(0,1), currentItem, ...items.slice(1)] : items;
   const max = items[0].base || 1;
@@ -600,14 +628,14 @@ function renderSplit(cur) {
 }
 
 function renderClassTable(rows) {
-  const ex = st.full ? 0 : st.exemption;
+  const ex = st.exemption;
   const m = {};
   for (const r of rows) {
     const k = r.cls; (m[k] ||= { cls: k, n: 0, hs: 0, base: 0, btax: 0, stax: 0 });
     m[k].n++; if (r.homestead) m[k].hs++;
     m[k].base += r.taxable;
     m[k].btax += taxOf(r.taxable, st.millage);
-    m[k].stax += scnTax(r, st.millage, ex, st.full);
+    m[k].stax += scnTax(r, st.millage, ex);
   }
   const arr = Object.values(m).sort((a, b) => b.base - a.base);
   const head = `<thead><tr><th>Property type</th><th># parcels</th><th>Homesteads</th>
@@ -623,7 +651,7 @@ function renderClassTable(rows) {
 
 // ---------- parcel table ----------
 function filteredParcels() {
-  const ex = st.full ? 0 : st.exemption;
+  const ex = st.exemption;
   const q = st.search.trim().toLowerCase();
   let rows = activeParcels().filter(r => {
     if (st.fCls && r.cls !== st.fCls) return false;
@@ -632,7 +660,7 @@ function filteredParcels() {
     return true;
   }).map(r => {
     const btax = taxOf(r.taxable, st.millage);
-    const stax = scnTax(r, st.millage, ex, st.full);
+    const stax = scnTax(r, st.millage, ex);
     return { ...r, btax, stax, change: stax - btax };
   });
   const key = st.sort;
@@ -680,29 +708,42 @@ function renderParcels(_rows) {
 
 // ---------- wiring ----------
 function syncEx() {
-  document.querySelectorAll("[data-ex]").forEach(c => c.classList.toggle("on", !st.full && +c.dataset.ex === st.exemption));
-  document.getElementById("fullElim").classList.toggle("on", st.full);
-  document.getElementById("exRange").disabled = st.full;
-  document.getElementById("exNum").disabled = st.full;
+  document.querySelectorAll("[data-ex]").forEach(c => c.classList.toggle("on", +c.dataset.ex === st.exemption));
 }
 function syncMil() {
   document.querySelectorAll("[data-mil]").forEach(c => c.classList.toggle("on", Math.abs(+c.dataset.mil - st.millage) < 1e-6));
 }
 // ZIP checkboxes + municipality dropdown
+const ALL_ZIPS = () => (S.zips && S.zips.length) ? S.zips : [...new Set(P.map(r => r.zip).filter(Boolean))].sort();
 function renderZipPicker() {
-  const zips = (S.zips && S.zips.length) ? S.zips : [...new Set(P.map(r => r.zip).filter(Boolean))].sort();
+  const zips = ALL_ZIPS();
   const box = document.getElementById("zipPicker");
   box.innerHTML = zips.map(z => {
     const on = st.zips.has(z) ? " on" : "";
     return `<label class="chip${on}" data-zip="${z}"><input type="checkbox" data-zip="${z}" ${st.zips.has(z) ? "checked" : ""}> ${ZIP_LABELS[z] || z}</label>`;
   }).join("");
-  box.querySelectorAll("input[data-zip]").forEach(cb => cb.onchange = () => {
-    const z = cb.dataset.zip;
-    if (cb.checked) st.zips.add(z); else st.zips.delete(z);
-    if (st.zips.size === 0) { st.zips.add(z); cb.checked = true; } // require ≥1
-    cb.closest("label").classList.toggle("on", cb.checked);
-    populateGeo(); syncBrandChip(); st.page = 0; render();
-  });
+  box.querySelectorAll("input[data-zip]").forEach(cb => cb.onchange = () => onZipToggle(cb));
+  updateZipCountLabel();
+}
+function onZipToggle(cb) {
+  const z = cb.dataset.zip;
+  if (cb.checked) st.zips.add(z); else st.zips.delete(z);
+  if (st.zips.size === 0) { st.zips.add(z); cb.checked = true; } // require ≥1
+  cb.closest("label").classList.toggle("on", cb.checked);
+  populateGeo(); syncBrandChip(); updateZipCountLabel(); st.page = 0; render();
+}
+function setAllZips(on) {
+  const zips = ALL_ZIPS();
+  st.zips.clear();
+  if (on) zips.forEach(z => st.zips.add(z));
+  else st.zips.add(zips[0]); // keep at least one
+  renderZipPicker(); populateGeo(); syncBrandChip(); st.page = 0; render();
+}
+function updateZipCountLabel() {
+  const el = document.getElementById("zipCountLabel"); if (!el) return;
+  const total = ALL_ZIPS().length;
+  const parcels = P.filter(r => st.zips.has(String(r.zip))).length;
+  el.textContent = `${st.zips.size} of ${total} selected · ${parcels.toLocaleString()} parcels`;
 }
 function populateGeo() {
   const sel = document.getElementById("geo");
@@ -716,20 +757,22 @@ function syncBrandChip() {
   const el = document.getElementById("brandZips");
   if (!el) return;
   const zs = [...st.zips].sort();
-  el.textContent = zs.length ? "· ZIP " + zs.join(" + ") : "· Miami-Dade";
+  const total = ALL_ZIPS().length;
+  el.textContent = zs.length === total ? "· South Miami-Dade" : (zs.length <= 3 ? "· ZIP " + zs.join(" + ") : `· ${zs.length} ZIPs`);
 }
 document.getElementById("geo").onchange = e => { st.geo = e.target.value; st.page = 0; render(); };
+document.getElementById("zipAll").onclick = () => setAllZips(true);
+document.getElementById("zipNone").onclick = () => setAllZips(false);
 document.getElementById("milRange").oninput = e => { st.millage = +e.target.value; document.getElementById("milNum").value = st.millage; syncMil(); render(); };
 document.getElementById("milNum").oninput = e => { st.millage = +e.target.value || 0; document.getElementById("milRange").value = st.millage; syncMil(); render(); };
 document.querySelectorAll("[data-mil]").forEach(c => c.onclick = () => {
   st.millage = +c.dataset.mil; document.getElementById("milRange").value = st.millage; document.getElementById("milNum").value = st.millage; syncMil(); render();
 });
-document.getElementById("exRange").oninput = e => { st.full = false; st.exemption = +e.target.value; document.getElementById("exNum").value = st.exemption; syncEx(); render(); };
-document.getElementById("exNum").oninput = e => { st.full = false; st.exemption = +e.target.value || 0; document.getElementById("exRange").value = Math.min(st.exemption, 2000000); syncEx(); render(); };
+document.getElementById("exRange").oninput = e => { st.exemption = +e.target.value; document.getElementById("exNum").value = st.exemption; syncEx(); render(); };
+document.getElementById("exNum").oninput = e => { st.exemption = +e.target.value || 0; document.getElementById("exRange").value = Math.min(st.exemption, 500000); syncEx(); render(); };
 document.querySelectorAll("[data-ex]").forEach(c => c.onclick = () => {
-  st.full = false; st.exemption = +c.dataset.ex; document.getElementById("exRange").value = st.exemption; document.getElementById("exNum").value = st.exemption; syncEx(); render();
+  st.exemption = +c.dataset.ex; document.getElementById("exRange").value = st.exemption; document.getElementById("exNum").value = st.exemption; syncEx(); render();
 });
-document.getElementById("fullElim").onclick = () => { st.full = !st.full; syncEx(); render(); };
 document.getElementById("search").oninput = e => { st.search = e.target.value; st.page = 0; renderParcels(); };
 document.getElementById("fCls").onchange = e => { st.fCls = e.target.value; st.page = 0; renderParcels(); };
 document.getElementById("fHs").onchange = e => { st.fHs = e.target.value; st.page = 0; renderParcels(); };

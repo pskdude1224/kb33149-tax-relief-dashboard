@@ -1,22 +1,26 @@
 {
-  "fetched_at": "2026-08-31T19:39:47.111Z",
+  "fetched_at": "2026-08-31T22:07:39.919Z",
   "source": "https://apps.miamidadepa.gov/PApublicServiceProxy/PaServicesProxy.ashx",
   "operation": "GetPropertySearchByFolio",
-  "total_folios": 20305,
-  "captured": 20305,
-  "valid": 20305,
-  "invalid_or_failed": 0,
-  "homestead_count": 10545,
+  "total_folios": 217178,
+  "captured": 217178,
+  "valid": 217175,
+  "invalid_or_failed": 3,
+  "homestead_count": 118076,
   "roll_year_distribution": {
-    "2026": 20305
+    "2025": 1,
+    "2026": 217174
   },
   "municipality_distribution": {
-    "Coral Gables": 1254,
-    "South Miami": 23,
-    "Pinecrest": 6456,
-    "Unincorporated County": 5129,
-    "Palmetto Bay": 28,
-    "Miami": 32,
-    "Key Biscayne": 7383
+    "Coral Gables": 7893,
+    "South Miami": 3959,
+    "Pinecrest": 6457,
+    "Unincorporated County": 135435,
+    "Palmetto Bay": 8571,
+    "Miami": 160,
+    "Key Biscayne": 7383,
+    "Cutler Bay": 14947,
+    "Homestead": 25541,
+    "Florida City": 6829
   }
 }

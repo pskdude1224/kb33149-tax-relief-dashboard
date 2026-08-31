@@ -1,6 +1,12 @@
 node_modules/
 .claude/
 *.log
-data/raw/serve.log
-data/raw/roll_fetch.log
 .DS_Store
+
+# Large raw fetch caches (regenerable via `npm run pipeline`; exceed GitHub's 100MB per-file limit at full scale)
+data/raw/parcels.json
+data/raw/roll.json
+data/raw/pa_*.json
+
+# Redundant with dashboard/data.js (which the site actually serves)
+data/derived/parcels_modeled.json

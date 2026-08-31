@@ -12,11 +12,15 @@ const DERIVED = join(ROOT, "data", "derived");
 mkdirSync(DERIVED, { recursive: true });
 
 // ---- defaults (editable in the dashboard) ----
+// Amendment 3 (Nov 2026 ballot) raises the homestead exemption for NON-SCHOOL
+// local taxes only. School millages keep the existing $25K exemption unchanged.
+// Ballot amounts: $150,000 in 2027, $250,000 in 2028+ (inflation-adjusted).
 const DEFAULTS = {
-  millage: 15.6226, // combined Village of Key Biscayne + Miami-Dade + School + districts (2025)
+  millage: 9.0, // approx KB combined NON-school local (Village + County + specials); editable
+  combined_millage: 15.6226, // combined incl. school — for reference only (amendment doesn't touch school)
   village_only_millage: 2.9794, // Village of Key Biscayne operating
-  exemption_presets: [100000, 250000, 500000],
-  published_kb_taxable_2025: 11_600_000_000, // KB Independent 2025 record
+  exemption_presets: [150000, 250000], // ballot amounts
+  published_kb_taxable_2025: 11_600_000_000,
 };
 
 // ---- FL DOR land-use code -> property class ----
@@ -77,12 +81,11 @@ function scenarioTax(row, millage, exemption, mode) {
   return taxOf(Math.max(0, base - exemption), millage);
 }
 function summarize(rows, millage) {
+  // Amendment 3 scenarios (Nov 2026 ballot) — $25K school exemption stays.
   const scenarios = [
-    { key: "baseline", label: "Baseline (current)", mode: "exempt", exemption: 0 },
-    { key: "e100", label: "$100K homestead exemption", mode: "exempt", exemption: 100000 },
-    { key: "e250", label: "$250K homestead exemption", mode: "exempt", exemption: 250000 },
-    { key: "e500", label: "$500K homestead exemption", mode: "exempt", exemption: 500000 },
-    { key: "full", label: "Full elimination (homestead)", mode: "full", exemption: 0 },
+    { key: "baseline", label: "Baseline (current $25K/$50K homestead)", mode: "exempt", exemption: 0 },
+    { key: "y2027", label: "2027 · $150K homestead exemption", mode: "exempt", exemption: 150000 },
+    { key: "y2028", label: "2028+ · $250K homestead exemption", mode: "exempt", exemption: 250000 },
   ];
   const base = rows.reduce((s, r) => s + taxOf(r.taxable, millage), 0);
   const out = {};
