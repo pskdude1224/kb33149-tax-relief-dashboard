@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-31T22:08:05.664Z",
+  "generated_at": "2026-09-01T03:33:02.925Z",
   "defaults": {
     "millage": 9,
     "combined_millage": 15.6226,
@@ -186,6 +186,361 @@
       "homestead_count": 18
     }
   ],
+  "by_muni": {
+    "Coral Gables": {
+      "muni": "Coral Gables",
+      "count": 7893,
+      "homestead": 4678,
+      "taxable": 14580325664,
+      "zips": [
+        "33143",
+        "33146",
+        "33156",
+        "33157",
+        "33158"
+      ],
+      "scenarios": {
+        "baseline": {
+          "label": "Baseline (current $25K/$50K homestead)",
+          "revenue": 131222931,
+          "revenue_lost": 0,
+          "pct_base_eroded": 0,
+          "parcels_fully_tax_free": 0
+        },
+        "y2027": {
+          "label": "2027 · $150K homestead exemption",
+          "revenue": 124953673,
+          "revenue_lost": 6269258,
+          "pct_base_eroded": 0.04777562813428302,
+          "parcels_fully_tax_free": 54
+        },
+        "y2028": {
+          "label": "2028+ · $250K homestead exemption",
+          "revenue": 120850097,
+          "revenue_lost": 10372834,
+          "pct_base_eroded": 0.07904741982860558,
+          "parcels_fully_tax_free": 167
+        }
+      }
+    },
+    "Cutler Bay": {
+      "muni": "Cutler Bay",
+      "count": 14947,
+      "homestead": 10315,
+      "taxable": 4383735440,
+      "zips": [
+        "33157",
+        "33189",
+        "33190"
+      ],
+      "scenarios": {
+        "baseline": {
+          "label": "Baseline (current $25K/$50K homestead)",
+          "revenue": 39453619,
+          "revenue_lost": 0,
+          "pct_base_eroded": 0,
+          "parcels_fully_tax_free": 0
+        },
+        "y2027": {
+          "label": "2027 · $150K homestead exemption",
+          "revenue": 27928655,
+          "revenue_lost": 11524964,
+          "pct_base_eroded": 0.29211424081742704,
+          "parcels_fully_tax_free": 3821
+        },
+        "y2028": {
+          "label": "2028+ · $250K homestead exemption",
+          "revenue": 23591544,
+          "revenue_lost": 15862075,
+          "pct_base_eroded": 0.4020436100952428,
+          "parcels_fully_tax_free": 6356
+        }
+      }
+    },
+    "Florida City": {
+      "muni": "Florida City",
+      "count": 6829,
+      "homestead": 2101,
+      "taxable": 1618459897,
+      "zips": [
+        "33030",
+        "33034",
+        "33035"
+      ],
+      "scenarios": {
+        "baseline": {
+          "label": "Baseline (current $25K/$50K homestead)",
+          "revenue": 14566139,
+          "revenue_lost": 0,
+          "pct_base_eroded": 0,
+          "parcels_fully_tax_free": 0
+        },
+        "y2027": {
+          "label": "2027 · $150K homestead exemption",
+          "revenue": 12396435,
+          "revenue_lost": 2169704,
+          "pct_base_eroded": 0.14895530216526823,
+          "parcels_fully_tax_free": 660
+        },
+        "y2028": {
+          "label": "2028+ · $250K homestead exemption",
+          "revenue": 11452725,
+          "revenue_lost": 3113414,
+          "pct_base_eroded": 0.21374322999368345,
+          "parcels_fully_tax_free": 1517
+        }
+      }
+    },
+    "Homestead": {
+      "muni": "Homestead",
+      "count": 25541,
+      "homestead": 11720,
+      "taxable": 6468282353,
+      "zips": [
+        "33030",
+        "33033",
+        "33034",
+        "33035"
+      ],
+      "scenarios": {
+        "baseline": {
+          "label": "Baseline (current $25K/$50K homestead)",
+          "revenue": 58214541,
+          "revenue_lost": 0,
+          "pct_base_eroded": 0,
+          "parcels_fully_tax_free": 0
+        },
+        "y2027": {
+          "label": "2027 · $150K homestead exemption",
+          "revenue": 46058415,
+          "revenue_lost": 12156126,
+          "pct_base_eroded": 0.20881597590953027,
+          "parcels_fully_tax_free": 4595
+        },
+        "y2028": {
+          "label": "2028+ · $250K homestead exemption",
+          "revenue": 41622319,
+          "revenue_lost": 16592223,
+          "pct_base_eroded": 0.28501852275280337,
+          "parcels_fully_tax_free": 7865
+        }
+      }
+    },
+    "Key Biscayne": {
+      "muni": "Key Biscayne",
+      "count": 7383,
+      "homestead": 2823,
+      "taxable": 12203799105,
+      "zips": [
+        "33149"
+      ],
+      "scenarios": {
+        "baseline": {
+          "label": "Baseline (current $25K/$50K homestead)",
+          "revenue": 109834192,
+          "revenue_lost": 0,
+          "pct_base_eroded": 0,
+          "parcels_fully_tax_free": 0
+        },
+        "y2027": {
+          "label": "2027 · $150K homestead exemption",
+          "revenue": 106047355,
+          "revenue_lost": 3786837,
+          "pct_base_eroded": 0.034477759046985426,
+          "parcels_fully_tax_free": 29
+        },
+        "y2028": {
+          "label": "2028+ · $250K homestead exemption",
+          "revenue": 103601789,
+          "revenue_lost": 6232403,
+          "pct_base_eroded": 0.056743740210889126,
+          "parcels_fully_tax_free": 177
+        }
+      }
+    },
+    "Miami": {
+      "muni": "Miami",
+      "count": 160,
+      "homestead": 18,
+      "taxable": 539179074,
+      "zips": [
+        "33146",
+        "33149"
+      ],
+      "scenarios": {
+        "baseline": {
+          "label": "Baseline (current $25K/$50K homestead)",
+          "revenue": 4852612,
+          "revenue_lost": 0,
+          "pct_base_eroded": 0,
+          "parcels_fully_tax_free": 0
+        },
+        "y2027": {
+          "label": "2027 · $150K homestead exemption",
+          "revenue": 4828312,
+          "revenue_lost": 24300,
+          "pct_base_eroded": 0.005007612739807482,
+          "parcels_fully_tax_free": 0
+        },
+        "y2028": {
+          "label": "2028+ · $250K homestead exemption",
+          "revenue": 4812112,
+          "revenue_lost": 40500,
+          "pct_base_eroded": 0.008346021233012469,
+          "parcels_fully_tax_free": 0
+        }
+      }
+    },
+    "Palmetto Bay": {
+      "muni": "Palmetto Bay",
+      "count": 8571,
+      "homestead": 6274,
+      "taxable": 4989473381,
+      "zips": [
+        "33156",
+        "33157",
+        "33158",
+        "33176"
+      ],
+      "scenarios": {
+        "baseline": {
+          "label": "Baseline (current $25K/$50K homestead)",
+          "revenue": 44905260,
+          "revenue_lost": 0,
+          "pct_base_eroded": 0,
+          "parcels_fully_tax_free": 0
+        },
+        "y2027": {
+          "label": "2027 · $150K homestead exemption",
+          "revenue": 36759611,
+          "revenue_lost": 8145650,
+          "pct_base_eroded": 0.18139633983148007,
+          "parcels_fully_tax_free": 407
+        },
+        "y2028": {
+          "label": "2028+ · $250K homestead exemption",
+          "revenue": 31893976,
+          "revenue_lost": 13011285,
+          "pct_base_eroded": 0.2897496730827848,
+          "parcels_fully_tax_free": 1237
+        }
+      }
+    },
+    "Pinecrest": {
+      "muni": "Pinecrest",
+      "count": 6457,
+      "homestead": 4486,
+      "taxable": 8772922944,
+      "zips": [
+        "33143",
+        "33156"
+      ],
+      "scenarios": {
+        "baseline": {
+          "label": "Baseline (current $25K/$50K homestead)",
+          "revenue": 78956306,
+          "revenue_lost": 0,
+          "pct_base_eroded": 0,
+          "parcels_fully_tax_free": 0
+        },
+        "y2027": {
+          "label": "2027 · $150K homestead exemption",
+          "revenue": 73018907,
+          "revenue_lost": 5937400,
+          "pct_base_eroded": 0.07519854867198815,
+          "parcels_fully_tax_free": 158
+        },
+        "y2028": {
+          "label": "2028+ · $250K homestead exemption",
+          "revenue": 69211130,
+          "revenue_lost": 9745177,
+          "pct_base_eroded": 0.12342493213627524,
+          "parcels_fully_tax_free": 310
+        }
+      }
+    },
+    "South Miami": {
+      "muni": "South Miami",
+      "count": 3959,
+      "homestead": 1885,
+      "taxable": 3001256855,
+      "zips": [
+        "33143",
+        "33156"
+      ],
+      "scenarios": {
+        "baseline": {
+          "label": "Baseline (current $25K/$50K homestead)",
+          "revenue": 27011312,
+          "revenue_lost": 0,
+          "pct_base_eroded": 0,
+          "parcels_fully_tax_free": 0
+        },
+        "y2027": {
+          "label": "2027 · $150K homestead exemption",
+          "revenue": 24674840,
+          "revenue_lost": 2336472,
+          "pct_base_eroded": 0.08649975011885455,
+          "parcels_fully_tax_free": 288
+        },
+        "y2028": {
+          "label": "2028+ · $250K homestead exemption",
+          "revenue": 23405160,
+          "revenue_lost": 3606152,
+          "pct_base_eroded": 0.13350523809132572,
+          "parcels_fully_tax_free": 594
+        }
+      }
+    },
+    "Unincorporated County": {
+      "muni": "Unincorporated County",
+      "count": 135435,
+      "homestead": 73776,
+      "taxable": 45909557090,
+      "zips": [
+        "33030",
+        "33032",
+        "33033",
+        "33034",
+        "33035",
+        "33039",
+        "33143",
+        "33146",
+        "33149",
+        "33156",
+        "33157",
+        "33170",
+        "33176",
+        "33186",
+        "33189",
+        "33190",
+        "33196"
+      ],
+      "scenarios": {
+        "baseline": {
+          "label": "Baseline (current $25K/$50K homestead)",
+          "revenue": 413186014,
+          "revenue_lost": 0,
+          "pct_base_eroded": 0,
+          "parcels_fully_tax_free": 0
+        },
+        "y2027": {
+          "label": "2027 · $150K homestead exemption",
+          "revenue": 332153578,
+          "revenue_lost": 81032436,
+          "pct_base_eroded": 0.19611611615743657,
+          "parcels_fully_tax_free": 23599
+        },
+        "y2028": {
+          "label": "2028+ · $250K homestead exemption",
+          "revenue": 297551469,
+          "revenue_lost": 115634545,
+          "pct_base_eroded": 0.2798607425641588,
+          "parcels_fully_tax_free": 41402
+        }
+      }
+    }
+  },
   "by_zip": {
     "33030": {
       "zip": "33030",
@@ -197,6 +552,8 @@
         "Homestead",
         "Unincorporated County"
       ],
+      "dominant_muni": "Homestead",
+      "dominant_share": 0.5572968656418447,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -229,6 +586,8 @@
       "municipalities": [
         "Unincorporated County"
       ],
+      "dominant_muni": "Unincorporated County",
+      "dominant_share": 1,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -262,6 +621,8 @@
         "Homestead",
         "Unincorporated County"
       ],
+      "dominant_muni": "Homestead",
+      "dominant_share": 0.5290286183198277,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -296,6 +657,8 @@
         "Homestead",
         "Unincorporated County"
       ],
+      "dominant_muni": "Florida City",
+      "dominant_share": 0.5099218280216476,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -330,6 +693,8 @@
         "Homestead",
         "Unincorporated County"
       ],
+      "dominant_muni": "Homestead",
+      "dominant_share": 0.8234067897558071,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -362,6 +727,8 @@
       "municipalities": [
         "Unincorporated County"
       ],
+      "dominant_muni": "Unincorporated County",
+      "dominant_share": 1,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -397,6 +764,8 @@
         "South Miami",
         "Unincorporated County"
       ],
+      "dominant_muni": "Unincorporated County",
+      "dominant_share": 0.6063095884039997,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -431,6 +800,8 @@
         "Miami",
         "Unincorporated County"
       ],
+      "dominant_muni": "Coral Gables",
+      "dominant_share": 0.9742063492063492,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -465,6 +836,8 @@
         "Miami",
         "Unincorporated County"
       ],
+      "dominant_muni": "Key Biscayne",
+      "dominant_share": 0.9935405732741219,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -501,6 +874,8 @@
         "South Miami",
         "Unincorporated County"
       ],
+      "dominant_muni": "Pinecrest",
+      "dominant_share": 0.5014758427839056,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -536,6 +911,8 @@
         "Palmetto Bay",
         "Unincorporated County"
       ],
+      "dominant_muni": "Unincorporated County",
+      "dominant_share": 0.47295803086390076,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -569,6 +946,8 @@
         "Coral Gables",
         "Palmetto Bay"
       ],
+      "dominant_muni": "Palmetto Bay",
+      "dominant_share": 0.7648475120385233,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -601,6 +980,8 @@
       "municipalities": [
         "Unincorporated County"
       ],
+      "dominant_muni": "Unincorporated County",
+      "dominant_share": 1,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -634,6 +1015,8 @@
         "Palmetto Bay",
         "Unincorporated County"
       ],
+      "dominant_muni": "Unincorporated County",
+      "dominant_share": 0.9777382492453643,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -666,6 +1049,8 @@
       "municipalities": [
         "Unincorporated County"
       ],
+      "dominant_muni": "Unincorporated County",
+      "dominant_share": 1,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -699,6 +1084,8 @@
         "Cutler Bay",
         "Unincorporated County"
       ],
+      "dominant_muni": "Cutler Bay",
+      "dominant_share": 0.9129094412331407,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -732,6 +1119,8 @@
         "Cutler Bay",
         "Unincorporated County"
       ],
+      "dominant_muni": "Cutler Bay",
+      "dominant_share": 0.7188876013904982,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",
@@ -764,6 +1153,8 @@
       "municipalities": [
         "Unincorporated County"
       ],
+      "dominant_muni": "Unincorporated County",
+      "dominant_share": 1,
       "scenarios": {
         "baseline": {
           "label": "Baseline (current $25K/$50K homestead)",

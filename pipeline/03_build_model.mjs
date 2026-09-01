@@ -127,15 +127,35 @@ for (const r of valid) {
   byMuni[k].taxable += r.taxable;
   if (r.homestead) byMuni[k].homestead_count++;
 }
+// per-municipality FULL aggregate with scenarios (for the splash "By municipality" map view)
+const byMuniFull = {};
+const uniqueMunis = [...new Set(valid.map((r) => r.muni || "(unknown)"))].sort();
+for (const m of uniqueMunis) {
+  const rowsM = valid.filter((r) => (r.muni || "(unknown)") === m);
+  byMuniFull[m] = {
+    muni: m,
+    count: rowsM.length,
+    homestead: rowsM.filter((r) => r.homestead).length,
+    taxable: Math.round(sum(rowsM, (r) => r.taxable)),
+    zips: [...new Set(rowsM.map((r) => r.zip).filter(Boolean))].sort(),
+    scenarios: summarize(rowsM, DEFAULTS.millage),
+  };
+}
 const byZip = {};
 for (const z of zips) {
   const rowsZ = valid.filter((r) => r.zip === z);
+  // dominant municipality by parcel count (used to color a ZIP polygon by its taxing city)
+  const muniCounts = {};
+  for (const r of rowsZ) { const m = r.muni || "(unknown)"; muniCounts[m] = (muniCounts[m] || 0) + 1; }
+  const dominant = Object.entries(muniCounts).sort((a, b) => b[1] - a[1])[0];
   byZip[z] = {
     zip: z,
     count: rowsZ.length,
     homestead: rowsZ.filter((r) => r.homestead).length,
     taxable: Math.round(sum(rowsZ, (r) => r.taxable)),
     municipalities: [...new Set(rowsZ.map((r) => r.muni).filter(Boolean))].sort(),
+    dominant_muni: dominant ? dominant[0] : null,
+    dominant_share: dominant ? dominant[1] / rowsZ.length : 0,
     scenarios: summarize(rowsZ, DEFAULTS.millage),
   };
 }
@@ -166,6 +186,7 @@ const summary = {
   },
   by_class: Object.values(byClass).sort((a, b) => b.taxable - a.taxable),
   by_municipality: Object.values(byMuni).sort((a, b) => b.taxable - a.taxable),
+  by_muni: byMuniFull, // full per-muni aggregate with scenarios (splash map "By municipality" view)
   by_zip: byZip,
   scenarios_at_default_millage: summarize(valid, DEFAULTS.millage),
 };

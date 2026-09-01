@@ -273,6 +273,7 @@
         <div class="map-modes" role="tablist">
           <button class="map-mode active" data-mode="coverage" role="tab" aria-selected="true">Coverage</button>
           <button class="map-mode" data-mode="revenue" role="tab" aria-selected="false">Revenue at stake</button>
+          <button class="map-mode" data-mode="municipality" role="tab" aria-selected="false">By municipality</button>
         </div>
         <div class="mapview-sub" id="mapModeSub">Click any district on the map — or any city in the legend — to open the dashboard filtered to that area.</div>
         <div class="map-and-legend">
@@ -364,9 +365,11 @@
       const zipOf = (a) => { try { return new URL(a.href).searchParams.get("zip"); } catch { return null; } };
       const fmtM = (n) => "$" + (n / 1e6).toFixed(n < 1e7 ? 1 : 0) + "M";
       const COPY = {
-        coverage: "Click any district on the map — or any city in the legend — to open the dashboard filtered to that area.",
-        revenue:  "Each district shaded by its estimated non-school local revenue loss under the 2028+ $250K homestead exemption. Darker = more at stake. Click for full detail.",
+        coverage:     "Click any district on the map — or any city in the legend — to open the dashboard filtered to that area.",
+        revenue:      "Each district shaded by its estimated non-school local revenue loss under the 2028+ $250K homestead exemption. Darker = more at stake. Click for full detail.",
+        municipality: "Each district shaded by the total revenue its taxing city or village would lose under the 2028+ exemption. Same city → same color. This is who actually loses the money.",
       };
+      const SHORT_MUNI = { "Unincorporated County": "Unincorp.", "Miami": "Miami · VK" };
       let currentMode = "coverage";
 
       const setHi = (zip, on) => {
@@ -383,30 +386,49 @@
 
         const zones = doc.querySelectorAll(".zone");
         const labels = doc.querySelectorAll(".zip-lbl");
+        const heat = (t) => {
+          const r = Math.round(70 + t * 185), g = Math.round(212 - t * 130), b = Math.round(191 - t * 140);
+          return `rgba(${r},${g},${b},${0.22 + t * 0.55})`;
+        };
         if (mode === "coverage" || !byZip) {
           zones.forEach(el => { el.style.fill = ""; });
           labels.forEach(el => { el.textContent = el.dataset.zip || el.textContent; });
           return;
         }
-        // revenue mode — compute a shared max for the heat scale
-        const losses = Object.values(byZip).map(z => (z.scenarios && z.scenarios.y2028 && z.scenarios.y2028.revenue_lost) || 0);
-        const maxLoss = Math.max(1, ...losses);
-        zones.forEach(el => {
-          const zip = el.dataset.zip;
-          const z = byZip[zip]; if (!z) { el.style.fill = ""; return; }
-          const loss = (z.scenarios && z.scenarios.y2028 && z.scenarios.y2028.revenue_lost) || 0;
-          const t = Math.min(1, loss / maxLoss);
-          // teal->amber->red heat scale
-          const r = Math.round(70 + t * 185), g = Math.round(212 - t * 130), b = Math.round(191 - t * 140);
-          const a = 0.22 + t * 0.55;
-          el.style.fill = `rgba(${r},${g},${b},${a})`;
-        });
-        labels.forEach(el => {
-          const zip = el.dataset.zip; if (!zip) return;
-          const z = byZip[zip];
-          const loss = z && z.scenarios && z.scenarios.y2028 && z.scenarios.y2028.revenue_lost;
-          el.textContent = loss ? fmtM(loss) : zip;
-        });
+        if (mode === "revenue") {
+          const losses = Object.values(byZip).map(z => z?.scenarios?.y2028?.revenue_lost || 0);
+          const maxLoss = Math.max(1, ...losses);
+          zones.forEach(el => {
+            const z = byZip[el.dataset.zip];
+            const loss = z?.scenarios?.y2028?.revenue_lost || 0;
+            el.style.fill = z ? heat(Math.min(1, loss / maxLoss)) : "";
+          });
+          labels.forEach(el => {
+            const zip = el.dataset.zip; if (!zip) return;
+            const loss = byZip[zip]?.scenarios?.y2028?.revenue_lost;
+            el.textContent = loss ? fmtM(loss) : zip;
+          });
+          return;
+        }
+        if (mode === "municipality") {
+          const byMuni = S && S.by_muni; if (!byMuni) return;
+          const munisLoss = Object.values(byMuni).map(m => m?.scenarios?.y2028?.revenue_lost || 0);
+          const maxLoss = Math.max(1, ...munisLoss);
+          const nameFor = (m) => SHORT_MUNI[m] || m;
+          zones.forEach(el => {
+            const zip = el.dataset.zip;
+            const dm = byZip[zip]?.dominant_muni;
+            const info = dm && byMuni[dm];
+            if (!info) { el.style.fill = ""; return; }
+            el.style.fill = heat(Math.min(1, (info.scenarios?.y2028?.revenue_lost || 0) / maxLoss));
+          });
+          labels.forEach(el => {
+            const zip = el.dataset.zip; if (!zip) return;
+            const dm = byZip[zip]?.dominant_muni;
+            el.textContent = dm ? nameFor(dm) : zip;
+          });
+          return;
+        }
       };
 
       const wire = () => {
