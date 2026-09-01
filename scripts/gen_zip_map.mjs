@@ -113,25 +113,12 @@ const LBL_H = 18;
 const placed = [];
 const sorted = feats.slice().sort((a, b) => b.area - a.area);
 for (const f of sorted) {
-  const attempts = [];
-  if (f.city) {
-    const inline = `${f.zip} · ${f.city}`;
-    attempts.push({ text: inline, kind: "full", w: inline.length * CHAR_W + 10 });
-  }
-  attempts.push({ text: f.zip, kind: "zip", w: 44 });
-
-  let seated = false;
-  for (const a of attempts) {
-    const box = { x0: f.lx - a.w / 2, y0: f.ly - LBL_H / 2, x1: f.lx + a.w / 2, y1: f.ly + LBL_H / 2 };
-    const collides = placed.some(p => !(box.x1 < p.x0 || box.x0 > p.x1 || box.y1 < p.y0 || box.y0 > p.y1));
-    if (!collides) {
-      f.showLabel = true; f.labelText = a.text; placed.push(box); seated = true;
-      break;
-    }
-  }
-  // ZIP-only is ALWAYS shown even if it would slightly overlap a bigger neighbour
-  // (a small overlap is better than losing a district number entirely).
-  if (!seated) { f.showLabel = true; f.labelText = f.zip; }
+  // ZIP-only labels on the map — the city names live in the legend beside it.
+  const box = { x0: f.lx - 22, y0: f.ly - LBL_H / 2, x1: f.lx + 22, y1: f.ly + LBL_H / 2 };
+  const collides = placed.some(p => !(box.x1 < p.x0 || box.x0 > p.x1 || box.y1 < p.y0 || box.y0 > p.y1));
+  if (!collides) placed.push(box);
+  f.showLabel = true; // always show — small overlaps beat a missing district number
+  f.labelText = f.zip;
 }
 
 // ---- emit SVG (clickable via wrapping <a target="_top">) ----
