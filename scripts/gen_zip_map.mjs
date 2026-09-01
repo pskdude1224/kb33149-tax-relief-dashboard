@@ -24,16 +24,25 @@ for (const f of src.features) for (const ring of f.geometry.rings) for (const [x
   if (x < minX) minX = x; if (x > maxX) maxX = x;
   if (y < minY) minY = y; if (y > maxY) maxY = y;
 }
-// Pull UDB early to find its westernmost longitude; if we have it, use it as
-// the map's western crop (a small buffer to the west so the line isn't at the edge).
-let udbMinX = Infinity;
+// Pull UDB's bounding box early — it defines the "developed Miami-Dade" frame.
+// Crop the map to that box (extended east to the coast), so wilderness tails
+// of a few zips (33196 west, 33035 south, 33033 west, 33170 west) don't stretch
+// the viewport into empty land.
+let udbMinX = Infinity, udbMaxX = -Infinity, udbMinY = Infinity, udbMaxY = -Infinity;
 try {
   const udbPre = JSON.parse(readFileSync(join(ROOT, "data", "raw", "udb.json"), "utf8"));
-  for (const f of udbPre.features || []) for (const p of (f.geometry || {}).paths || []) for (const [x] of p) {
-    if (x < udbMinX) udbMinX = x;
+  for (const f of udbPre.features || []) for (const p of (f.geometry || {}).paths || []) for (const [x, y] of p) {
+    if (x < udbMinX) udbMinX = x; if (x > udbMaxX) udbMaxX = x;
+    if (y < udbMinY) udbMinY = y; if (y > udbMaxY) udbMaxY = y;
   }
-} catch { udbMinX = Infinity; }
-if (isFinite(udbMinX)) minX = Math.max(minX, udbMinX - 0.010); // ~1 km buffer west of the UDB
+} catch { /* UDB missing — keep ZIP bounds */ }
+if (isFinite(udbMinX)) {
+  const buf = 0.010; // ~1 km
+  minX = Math.max(minX, udbMinX - buf);
+  minY = Math.max(minY, udbMinY - buf);
+  maxY = Math.min(maxY, udbMaxY + buf);
+  // maxX stays at the ZIP coast (east is water, no need to crop)
+}
 const pad = 0.005;
 minX -= pad; maxX += pad; minY -= pad; maxY += pad;
 const midLat = (minY + maxY) / 2;

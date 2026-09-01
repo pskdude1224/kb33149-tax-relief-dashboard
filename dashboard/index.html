@@ -135,6 +135,15 @@
   .mapview { padding: 30px 0 20px; text-align: center; }
   .mapview h2 { font-size: 22px; color: #eef3fa; margin: 0 0 6px; letter-spacing: -.2px; font-weight: 700; }
   .mapview-sub { font-size: 13.5px; color: #9fb0c3; margin: 0 auto 20px; max-width: 780px; line-height: 1.5; }
+  /* Instant hover tooltip that follows the cursor on map districts */
+  .map-tt { position: absolute; pointer-events: none; z-index: 40; padding: 8px 12px;
+    background: rgba(9,14,22,.94); border: 1px solid rgba(45,212,191,.5); border-radius: 10px;
+    color: #eef3fa; font-size: 13px; line-height: 1.4; letter-spacing: .1px;
+    box-shadow: 0 12px 32px rgba(0,0,0,.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    max-width: 280px; }
+  .map-tt b { color: #fff; }
+  .map-tt .tt-sub { color: var(--mut); font-size: 12px; }
+
   .map-modes { display: inline-flex; gap: 4px; background: rgba(255,255,255,.04); border: 1px solid var(--glassline);
     border-radius: 999px; padding: 4px; margin: 4px auto 14px; }
   .map-mode { background: transparent; border: 0; color: var(--mut); font-size: 13px; font-weight: 600;
@@ -418,7 +427,7 @@
   </div>
 
   <script>
-    // Wire legend-hover-highlight + map-mode toggle ("Coverage" / "Revenue at stake").
+    // Wire legend-hover-highlight + map-mode toggle + on-map hover tooltip.
     (function wireMap() {
       const items = document.querySelectorAll(".legend-item");
       const modeBtns = document.querySelectorAll(".map-mode");
@@ -427,6 +436,38 @@
       if (!obj) return;
       const zipOf = (a) => { try { return new URL(a.href).searchParams.get("zip"); } catch { return null; } };
       const fmtM = (n) => "$" + (n / 1e6).toFixed(n < 1e7 ? 1 : 0) + "M";
+      // For a legend row's representative ZIP, return every ZIP whose dominant
+      // municipality matches — so hovering 'Palmetto Bay' lights up 33157 AND 33158.
+      const zipsForLegend = (a) => {
+        const zip = zipOf(a); if (!zip) return [];
+        const S = window.__SUMMARY__;
+        const info = S && S.by_zip && S.by_zip[zip];
+        const muni = info && info.dominant_muni;
+        if (!muni || !S.by_zip) return [zip];
+        return Object.entries(S.by_zip).filter(([, i]) => i.dominant_muni === muni).map(([z]) => z);
+      };
+      // Floating tooltip element (created lazily, positioned in page coords)
+      let tt = document.getElementById("mapTooltip");
+      if (!tt) { tt = document.createElement("div"); tt.id = "mapTooltip"; tt.className = "map-tt"; tt.hidden = true; document.body.appendChild(tt); }
+      const tooltipText = (zip) => {
+        const S = window.__SUMMARY__;
+        const info = S && S.by_zip && S.by_zip[zip];
+        const muni = info && info.dominant_muni;
+        const loss = info && info.scenarios && info.scenarios.y2028 && info.scenarios.y2028.revenue_lost;
+        const base = muni ? `<b>${muni}</b> · ZIP ${zip}` : `ZIP ${zip}`;
+        return loss ? `${base}<br><span class="tt-sub">2028+ loss ≈ ${fmtM(loss)}/yr</span>` : base;
+      };
+      const objRect = () => obj.getBoundingClientRect();
+      const showTip = (zip, evt) => {
+        tt.innerHTML = tooltipText(zip);
+        tt.hidden = false;
+        const r = objRect();
+        // evt.clientX/Y come from the SVG's coordinate space, translate into page coords by adding the object's page offset
+        const x = r.left + window.scrollX + evt.clientX + 14;
+        const y = r.top + window.scrollY + evt.clientY + 14;
+        tt.style.left = x + "px"; tt.style.top = y + "px";
+      };
+      const hideTip = () => { tt.hidden = true; };
       const COPY = {
         coverage:     "Click any district on the map — or any city in the legend — to open the dashboard filtered to that area.",
         revenue:      "Each district shaded by its estimated non-school local revenue loss under the 2028+ $250K homestead exemption. Darker = more at stake. Click for full detail.",
@@ -435,9 +476,11 @@
       const SHORT_MUNI = { "Unincorporated County": "Unincorp.", "Miami": "Miami · VK" };
       let currentMode = "coverage";
 
-      const setHi = (zip, on) => {
+      const setHi = (zips, on) => {
         const doc = obj.contentDocument; if (!doc) return;
-        doc.querySelectorAll('.zone[data-zip="' + zip + '"]').forEach(el => el.classList.toggle("hi", on));
+        (Array.isArray(zips) ? zips : [zips]).forEach(zip => {
+          doc.querySelectorAll('.zone[data-zip="' + zip + '"]').forEach(el => el.classList.toggle("hi", on));
+        });
       };
       const applyMode = (mode) => {
         currentMode = mode;
@@ -495,10 +538,19 @@
       };
 
       const wire = () => {
+        // Legend row -> highlight every zip that belongs to that city
         items.forEach(a => {
-          const z = zipOf(a); if (!z) return;
-          a.addEventListener("mouseenter", () => setHi(z, true));
-          a.addEventListener("mouseleave", () => setHi(z, false));
+          const zs = zipsForLegend(a); if (!zs.length) return;
+          a.addEventListener("mouseenter", () => setHi(zs, true));
+          a.addEventListener("mouseleave", () => setHi(zs, false));
+        });
+        // On-map: fast tooltip on each district polygon (city + ZIP + revenue)
+        const doc = obj.contentDocument;
+        if (doc) doc.querySelectorAll(".zone[data-zip]").forEach(el => {
+          const z = el.dataset.zip;
+          el.addEventListener("mouseenter", (e) => showTip(z, e));
+          el.addEventListener("mousemove",  (e) => showTip(z, e));
+          el.addEventListener("mouseleave", hideTip);
         });
         applyMode(currentMode);
       };
