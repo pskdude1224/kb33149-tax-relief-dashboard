@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Key Biscayne (33149) — Property Tax Relief Impact</title>
-<meta name="description" content="Interactive model of Florida Amendment 3 (Nov 2026) — $150K homestead exemption in 2027 rising to $250K in 2028 — across 18 South Miami-Dade ZIP codes. Search your address to see your estimated change." />
+<meta name="description" content="Interactive model of Florida Amendment 3 (Nov 2026) — $150K homestead exemption in 2027 rising to $250K in 2028 — across 29 South Miami-Dade ZIP codes. Search your address to see your estimated change." />
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <meta name="theme-color" content="#070b11" />
 <meta property="og:type" content="website" />
@@ -279,7 +279,7 @@
   <header>
     <span class="eyebrow"><span class="pulse"></span> Florida ballot measure · November 2026</span>
     <h1>Property Tax Relief Impact</h1>
-    <div class="sub">How the proposed homestead exemption (“Save Our Homes from Excessive Property Taxes”) would affect local tax bases across <b>South Miami-Dade</b> — from Coral Gables and Key Biscayne through Pinecrest, Kendall, Palmetto Bay, and Cutler Bay down to Homestead. <b>18 ZIP codes, 200,000+ parcels.</b> Toggle the ZIPs below to scope the model to your area.</div>
+    <div class="sub">How the proposed homestead exemption (“Save Our Homes from Excessive Property Taxes”) would affect local tax bases across <b>South Miami-Dade</b> — from Downtown Miami / Brickell and the Rickenbacker corridor through Coconut Grove, Coral Gables, Pinecrest, Kendall, Palmetto Bay, and Cutler Bay down to Homestead. <b>29 ZIP codes, 340,000+ parcels.</b> Toggle the ZIPs below to scope the model to your area.</div>
     <div class="badges" id="badges"></div>
   </header>
 
@@ -300,7 +300,7 @@
     <summary>Data sources &amp; modeling assumptions (read me)</summary>
     <div class="body">
       <ul>
-        <li><b>Parcel universe:</b> every folio across 18 South Miami-Dade ZIP codes — from Coral Gables and Key Biscayne through Pinecrest, Kendall, Palmetto Bay, and Cutler Bay to Homestead — pulled from Miami-Dade County's live ArcGIS “Property @ PaGis” layer. Toggle the ZIP checkboxes at the top of the page to change scope.</li>
+        <li><b>Parcel universe:</b> every folio across 29 South Miami-Dade ZIP codes — from Downtown Miami / Brickell through Coconut Grove, Coral Gables, Pinecrest, Kendall, Palmetto Bay, and Cutler Bay to Homestead — pulled from Miami-Dade County's live ArcGIS “Property @ PaGis” layer. Toggle the ZIP checkboxes at the top of the page to change scope.</li>
         <li><b>Values &amp; exemptions:</b> per-folio from the Miami-Dade Property Appraiser public roll API (certified <b id="rollyr2">2025</b> roll). The GIS layers carry <i>no</i> exemption flag or taxable value — this API is the source for both.</li>
         <li><b>Taxable base used:</b> the <b>non-school local taxable value</b> (county/municipal taxable, after current exemptions). This is the base the local municipality + Miami-Dade county millages levy on. School taxable differs slightly (the extra $25K homestead exemption doesn't apply to schools) and is excluded from this model's base.</li>
         <li><b>Millage caveat:</b> a single combined millage is applied across all selected parcels. Each municipality (Key Biscayne, Pinecrest, Coral Gables, Unincorporated, etc.) actually has a slightly different combined rate. Filter to one municipality to get its accurate estimate.</li>
@@ -442,6 +442,12 @@ const ZIP_LABELS = {
   "33030": "33030 · Homestead",         "33032": "33032 · Homestead / Naranja",
   "33033": "33033 · Homestead",         "33034": "33034 · Florida City",
   "33035": "33035 · Homestead",         "33039": "33039 · Naranja",
+  "33125": "33125 · Little Havana W",   "33129": "33129 · Coconut Grove N",
+  "33130": "33130 · Little Havana E",   "33131": "33131 · Brickell / Downtown",
+  "33132": "33132 · Downtown Miami",    "33133": "33133 · Coconut Grove",
+  "33134": "33134 · Coral Gables NE",   "33135": "33135 · Little Havana",
+  "33137": "33137 · Wynwood / Edgewater","33144": "33144 · Sweetwater",
+  "33145": "33145 · Shenandoah",
 };
 
 // ---------- scenario engine (mirrors pipeline/03_build_model.mjs) ----------

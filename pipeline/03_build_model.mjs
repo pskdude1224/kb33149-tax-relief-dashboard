@@ -47,28 +47,25 @@ const rollByFolio = new Map(roll.map((r) => [r.folio, r]));
 
 const num = (v) => (typeof v === "number" && isFinite(v) ? v : 0);
 let missingRoll = 0;
-const modeled = parcels.map((p) => {
+const modeled = [];
+for (const p of parcels) {
   const folio = String(p.FOLIO);
   const r = rollByFolio.get(folio);
-  if (!r || !r.ok) missingRoll++;
-  const dorCode = (r && r.dor_code) || p.DOR_CODE_CUR;
-  const dorDesc = (r && r.dor_desc) || p.DOR_DESC;
-  return {
+  if (!r || !r.ok) { missingRoll++; continue; } // drop invalid; keeps data.js lean
+  const dorCode = r.dor_code || p.DOR_CODE_CUR;
+  modeled.push({
     folio,
     zip: p.zip || String(p.TRUE_SITE_ZIP_CODE || "").slice(0, 5) || null,
     addr: p.TRUE_SITE_ADDR || null,
-    muni: (r && r.municipality) || p.TRUE_SITE_CITY || null,
-    dorCode, dorDesc, cls: classify(dorCode),
-    homestead: r && r.homestead ? 1 : 0,
-    taxable: r ? num(r.county_taxable) : 0,
-    schoolTaxable: r ? num(r.school_taxable) : 0,
-    justVal: r ? num(r.just_value) : 0,
-    assessedVal: r ? num(r.assessed_value) : 0,
-    exemption: r ? num(r.county_exemption) : 0,
-    rollYear: r ? r.roll_year : null,
-    valid: !!(r && r.ok),
-  };
-});
+    muni: r.municipality || p.TRUE_SITE_CITY || null,
+    dorCode, cls: classify(dorCode),
+    homestead: r.homestead ? 1 : 0,
+    taxable: num(r.county_taxable),
+    justVal: num(r.just_value),
+    assessedVal: num(r.assessed_value),
+    exemption: num(r.county_exemption),
+  });
+}
 
 const zips = [...new Set(modeled.map((r) => r.zip).filter(Boolean))].sort();
 
@@ -107,7 +104,7 @@ function summarize(rows, millage) {
   return out;
 }
 
-const valid = modeled.filter((r) => r.valid);
+const valid = modeled; // invalid rows are dropped upstream now
 const homesteads = valid.filter((r) => r.homestead);
 const kbOnly = valid.filter((r) => (r.muni || "").toLowerCase().includes("key biscayne"));
 const sum = (a, f) => a.reduce((s, r) => s + f(r), 0);
@@ -194,7 +191,7 @@ const summary = {
 writeFileSync(join(DERIVED, "parcels_modeled.json"), JSON.stringify(modeled));
 writeFileSync(join(DERIVED, "summary.json"), JSON.stringify(summary, null, 2));
 
-const csvCols = ["folio", "zip", "addr", "muni", "dorCode", "dorDesc", "cls", "homestead", "taxable", "assessedVal", "justVal", "exemption", "rollYear", "valid"];
+const csvCols = ["folio", "zip", "addr", "muni", "dorCode", "cls", "homestead", "taxable", "assessedVal", "justVal", "exemption"];
 const esc = (v) => { if (v === null || v === undefined) return ""; const s = String(v); return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
 writeFileSync(join(DERIVED, "parcels_modeled.csv"),
   [csvCols.join(","), ...modeled.map((r) => csvCols.map((c) => esc(r[c])).join(","))].join("\r\n"));

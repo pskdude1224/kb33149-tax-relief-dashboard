@@ -116,6 +116,10 @@ const CITY = {
   33186: "West Kendall", 33189: "Cutler Bay",    33190: "South MDC",     33196: "West Kendall",
   33030: "Homestead",    33032: "Homestead",     33033: "Homestead",     33034: "Florida City",
   33035: "Homestead",    33039: "Naranja",
+  33125: "Little Havana",     33129: "Coconut Grove N",  33130: "Little Havana",
+  33131: "Brickell",          33132: "Downtown Miami",   33133: "Coconut Grove",
+  33134: "Coral Gables NE",   33135: "Little Havana",    33137: "Wynwood",
+  33144: "Sweetwater",        33145: "Shenandoah",
 };
 
 // ---- build feature records with area + centroid ----

@@ -5,6 +5,7 @@ node_modules/
 
 # Large raw fetch caches (regenerable via `npm run pipeline`; exceed GitHub's 100MB per-file limit at full scale)
 data/raw/parcels.json
+data/raw/parcels.csv
 data/raw/roll.json
 data/raw/pa_*.json
 
