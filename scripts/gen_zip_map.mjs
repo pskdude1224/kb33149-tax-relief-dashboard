@@ -82,6 +82,15 @@ function bestLabelPoint(rings) {
   return best || c;
 }
 
+// ---- ZIP -> municipality label ----
+const CITY = {
+  33149: "Key Biscayne", 33156: "Pinecrest",     33143: "South Miami",  33146: "Coral Gables",
+  33157: "Palmetto Bay", 33158: "Palmetto Bay",  33170: "Redland",       33176: "Kendall",
+  33186: "West Kendall", 33189: "Cutler Bay",    33190: "South MDC",     33196: "West Kendall",
+  33030: "Homestead",    33032: "Homestead",     33033: "Homestead",     33034: "Florida City",
+  33035: "Homestead",    33039: "Naranja",
+};
+
 // ---- build feature records with area + centroid ----
 const feats = src.features.map(f => {
   const zip = String(f.attributes.ZIP);
@@ -90,18 +99,39 @@ const feats = src.features.map(f => {
   const [clon, clat] = bestLabelPoint(f.geometry.rings);
   const [lx, ly] = project(clon, clat);
   const d = f.geometry.rings.map(r => "M" + r.map(([x, y]) => project(x, y).map(v => v.toFixed(2)).join(",")).join(" L") + " Z").join(" ");
-  return { zip, area, lx, ly, d };
+  return { zip, area, lx, ly, d, city: CITY[zip] || "" };
 });
 
-// ---- label collision: keep labels for larger polys, drop overlapping smaller ones ----
-const LBL_W = 44, LBL_H = 20; // approximate bbox of a 4-digit ZIP label at 11-12px
+// ---- label placement with three-tier fallback + city-name dedup ----
+// 1. Inline "33149 · Key Biscayne" (~1-line, wider bbox)
+// 2. ZIP-only fallback if the inline form collides
+// 3. Drop label entirely if even ZIP-only collides (still clickable + tooltip)
+// City name is only allowed on the LARGEST polygon per city — smaller
+// same-city neighbours drop back to ZIP-only.
+const CHAR_W = 6.6; // ~ px per char at the label font size
+const LBL_H = 18;
 const placed = [];
 const sorted = feats.slice().sort((a, b) => b.area - a.area);
 for (const f of sorted) {
-  const box = { x0: f.lx - LBL_W / 2, y0: f.ly - LBL_H / 2, x1: f.lx + LBL_W / 2, y1: f.ly + LBL_H / 2 };
-  const collides = placed.some(p => !(box.x1 < p.x0 || box.x0 > p.x1 || box.y1 < p.y0 || box.y0 > p.y1));
-  f.showLabel = !collides;
-  if (!collides) placed.push(box);
+  const attempts = [];
+  if (f.city) {
+    const inline = `${f.zip} · ${f.city}`;
+    attempts.push({ text: inline, kind: "full", w: inline.length * CHAR_W + 10 });
+  }
+  attempts.push({ text: f.zip, kind: "zip", w: 44 });
+
+  let seated = false;
+  for (const a of attempts) {
+    const box = { x0: f.lx - a.w / 2, y0: f.ly - LBL_H / 2, x1: f.lx + a.w / 2, y1: f.ly + LBL_H / 2 };
+    const collides = placed.some(p => !(box.x1 < p.x0 || box.x0 > p.x1 || box.y1 < p.y0 || box.y0 > p.y1));
+    if (!collides) {
+      f.showLabel = true; f.labelText = a.text; placed.push(box); seated = true;
+      break;
+    }
+  }
+  // ZIP-only is ALWAYS shown even if it would slightly overlap a bigger neighbour
+  // (a small overlap is better than losing a district number entirely).
+  if (!seated) { f.showLabel = true; f.labelText = f.zip; }
 }
 
 // ---- emit SVG (clickable via wrapping <a target="_top">) ----
@@ -127,8 +157,8 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.
       .zip-lbl { font: 700 12px -apple-system, "Segoe UI", Roboto, sans-serif; fill: #eaf4ff; pointer-events: none; text-anchor: middle; paint-order: stroke; stroke: rgba(7,11,17,.85); stroke-width: 3.5; stroke-linejoin: round; }
     </style>
   </defs>
-${feats.map(f => `  <a href="app.html?zip=${f.zip}" target="_top"><path class="zone" data-zip="${f.zip}" d="${f.d}"><title>ZIP ${f.zip} — click for its dashboard view</title></path></a>`).join("\n")}
-${feats.filter(f => f.showLabel).map(f => `  <text class="zip-lbl" x="${f.lx.toFixed(1)}" y="${(f.ly + 4).toFixed(1)}">${f.zip}</text>`).join("\n")}
+${feats.map(f => `  <a href="app.html?zip=${f.zip}" target="_top"><path class="zone" data-zip="${f.zip}" d="${f.d}"><title>ZIP ${f.zip}${f.city ? " · " + f.city : ""} — click for its dashboard view</title></path></a>`).join("\n")}
+${feats.filter(f => f.showLabel).map(f => `  <text class="zip-lbl" x="${f.lx.toFixed(1)}" y="${(f.ly + 4).toFixed(1)}">${f.labelText}</text>`).join("\n")}
 </svg>
 `;
 
