@@ -51,9 +51,14 @@
   .container { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 26px; }
 
   nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
-  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .2px; }
-  .brand .dot { width: 11px; height: 11px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), var(--teal)); box-shadow: 0 0 14px rgba(45,212,191,.7); }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; letter-spacing: .2px; min-width: 0; flex: 1; }
+  .brand .dot { flex: none; width: 11px; height: 11px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), var(--teal)); box-shadow: 0 0 14px rgba(45,212,191,.7); }
   .brand small { color: var(--mut); font-weight: 500; }
+  .topzips { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
+  .zpill { background: rgba(255,255,255,.04); border: 1px solid rgba(45,212,191,.28);
+    color: #bdeede; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700;
+    font-variant-numeric: tabular-nums; letter-spacing: .3px; }
+  .zpill:hover { border-color: rgba(45,212,191,.65); color: #fff; }
   .navlink { color: var(--mut); font-size: 14px; }
   .navlink:hover { color: var(--ink); }
 
@@ -177,7 +182,12 @@
   <div class="page">
     <div class="container">
       <nav class="reveal">
-        <div class="brand"><span class="dot"></span> KB Tax Relief <small>· ZIP 33149</small></div>
+        <div class="brand">
+          <span class="dot"></span>
+          <div class="topzips" aria-label="Coverage: 18 South Miami-Dade ZIP codes">
+            <span class="zpill">33030</span><span class="zpill">33032</span><span class="zpill">33033</span><span class="zpill">33034</span><span class="zpill">33035</span><span class="zpill">33039</span><span class="zpill">33143</span><span class="zpill">33146</span><span class="zpill">33149</span><span class="zpill">33156</span><span class="zpill">33157</span><span class="zpill">33158</span><span class="zpill">33170</span><span class="zpill">33176</span><span class="zpill">33186</span><span class="zpill">33189</span><span class="zpill">33190</span><span class="zpill">33196</span>
+          </div>
+        </div>
         <a class="navlink" href="app.html">Open dashboard →</a>
       </nav>
 
