@@ -782,9 +782,12 @@ document.getElementById("next").onclick = () => { st.page++; renderParcels(); };
 
 // ---------- init ----------
 (function init() {
-  // seed ZIP selection from data (all on by default) BEFORE rendering
+  // seed ZIP selection from data (all on by default) BEFORE rendering,
+  // or from ?zip=NNNNN in the URL when arriving from the splash-page map/pills
   const allZips = (S.zips && S.zips.length) ? S.zips : [...new Set(P.map(r => r.zip).filter(Boolean))].sort();
-  allZips.forEach(z => st.zips.add(z));
+  const urlZip = new URLSearchParams(location.search).get("zip");
+  if (urlZip && allZips.includes(String(urlZip))) st.zips.add(String(urlZip));
+  else allZips.forEach(z => st.zips.add(z));
   renderZipPicker(); populateGeo(); syncBrandChip();
 
   // badges

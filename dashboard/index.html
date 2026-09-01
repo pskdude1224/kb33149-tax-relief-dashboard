@@ -54,11 +54,22 @@
   .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; letter-spacing: .2px; min-width: 0; flex: 1; }
   .brand .dot { flex: none; width: 11px; height: 11px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), var(--teal)); box-shadow: 0 0 14px rgba(45,212,191,.7); }
   .brand small { color: var(--mut); font-weight: 500; }
-  .topzips { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
-  .zpill { background: rgba(255,255,255,.04); border: 1px solid rgba(45,212,191,.28);
-    color: #bdeede; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700;
-    font-variant-numeric: tabular-nums; letter-spacing: .3px; }
-  .zpill:hover { border-color: rgba(45,212,191,.65); color: #fff; }
+  .topzips { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; align-items: center; }
+  .rpill { display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,.035); border: 1px solid rgba(45,212,191,.28);
+    color: #cfe6ff; padding: 5px 11px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+    letter-spacing: .1px; text-decoration: none; transition: border-color .15s, color .15s, background .15s; }
+  .rpill:hover { border-color: rgba(45,212,191,.75); color: #fff; background: rgba(45,212,191,.09); }
+  .rpill .ct { font-size: 10.5px; color: #9fb0c3; background: rgba(255,255,255,.06);
+    border-radius: 999px; padding: 1px 6px; font-weight: 700; }
+  /* nicer "Open dashboard" CTA in the nav */
+  .nav-cta { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; flex: none;
+    background: linear-gradient(100deg, #46a6ff, #2dd4bf 60%, #59d39a); color: #04121d;
+    font-weight: 800; font-size: 14px; padding: 8px 16px; border-radius: 10px;
+    box-shadow: 0 6px 22px rgba(45,160,230,.35); transition: transform .12s, box-shadow .12s; white-space: nowrap; }
+  .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(45,160,230,.5); }
+  .nav-cta .arr { font-size: 16px; transition: transform .12s; }
+  .nav-cta:hover .arr { transform: translateX(3px); }
   .navlink { color: var(--mut); font-size: 14px; }
   .navlink:hover { color: var(--ink); }
 
@@ -184,11 +195,18 @@
       <nav class="reveal">
         <div class="brand">
           <span class="dot"></span>
-          <div class="topzips" aria-label="Coverage: 18 South Miami-Dade ZIP codes">
-            <span class="zpill">33030</span><span class="zpill">33032</span><span class="zpill">33033</span><span class="zpill">33034</span><span class="zpill">33035</span><span class="zpill">33039</span><span class="zpill">33143</span><span class="zpill">33146</span><span class="zpill">33149</span><span class="zpill">33156</span><span class="zpill">33157</span><span class="zpill">33158</span><span class="zpill">33170</span><span class="zpill">33176</span><span class="zpill">33186</span><span class="zpill">33189</span><span class="zpill">33190</span><span class="zpill">33196</span>
+          <div class="topzips" aria-label="Coverage: 8 South Miami-Dade regions across 18 ZIP codes">
+            <a class="rpill" href="app.html?zip=33149"    title="ZIP 33149">Key Biscayne</a>
+            <a class="rpill" href="app.html?zip=33156"    title="ZIP 33156">Pinecrest</a>
+            <a class="rpill" href="app.html?zip=33146"    title="ZIPs 33143, 33146">Coral Gables · South Miami</a>
+            <a class="rpill" href="app.html?zip=33176"    title="ZIPs 33176, 33186, 33196">Kendall <span class="ct">3</span></a>
+            <a class="rpill" href="app.html?zip=33158"    title="ZIPs 33157, 33158">Palmetto Bay <span class="ct">2</span></a>
+            <a class="rpill" href="app.html?zip=33189"    title="ZIPs 33189, 33190">Cutler Bay <span class="ct">2</span></a>
+            <a class="rpill" href="app.html?zip=33170"    title="ZIP 33170">Redland</a>
+            <a class="rpill" href="app.html?zip=33030"    title="ZIPs 33030, 33032–33035, 33039">Homestead <span class="ct">6</span></a>
           </div>
         </div>
-        <a class="navlink" href="app.html">Open dashboard →</a>
+        <a class="nav-cta" href="app.html">Open dashboard <span class="arr">→</span></a>
       </nav>
 
       <section class="hero">
@@ -196,10 +214,11 @@
           <span class="eyebrow reveal" style="animation-delay:.05s"><span class="pulse"></span> Florida ballot measure · November 2026</span>
           <h1 class="reveal" style="animation-delay:.12s">See how it affects your home.</h1>
           <p class="lede reveal" style="animation-delay:.2s">
-            Florida voters will decide whether to erase property tax on the first <b>$250,000</b> —
-            then <b>$500,000</b>, and eventually <b>all</b> — of a homesteaded property's value.
-            This independent tool models, parcel by parcel, what that would do to the local tax bases across
-            <b>South Miami-Dade</b> — 18 ZIP codes from Coral Gables through Pinecrest and Kendall down to Homestead — and to streets like yours.
+            Florida <b>Amendment 3</b> (Nov 3, 2026) raises the homestead exemption for non-school
+            local taxes to <b>$150,000 in 2027</b> and <b>$250,000 in 2028+</b>. This independent tool
+            models — parcel by parcel across <b>18 South Miami-Dade ZIP codes, from Coral Gables through
+            Pinecrest and Kendall down to Homestead</b> — exactly what that would do to your street's
+            local tax base and to your own home.
           </p>
           <div class="cta-row reveal" style="animation-delay:.28s">
             <a class="cta" href="app.html">See how it affects your home <span class="arr">→</span></a>
