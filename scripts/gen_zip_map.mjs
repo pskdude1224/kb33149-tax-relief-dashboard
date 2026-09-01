@@ -121,6 +121,18 @@ for (const f of sorted) {
   f.labelText = f.zip;
 }
 
+// ---- fetch UDB polyline (optional — beautifies map) ----
+let udbPathD = "";
+try {
+  const udb = JSON.parse(readFileSync(join(ROOT, "data", "raw", "udb.json"), "utf8"));
+  const parts = [];
+  for (const f of udb.features || []) for (const path of (f.geometry || {}).paths || []) {
+    if (path.length < 2) continue;
+    parts.push("M" + path.map(([x, y]) => project(x, y).map(v => v.toFixed(1)).join(",")).join(" L"));
+  }
+  udbPathD = parts.join(" ");
+} catch { /* UDB optional; if missing, skip it */ }
+
 // ---- emit SVG (clickable via wrapping <a target="_top">) ----
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${W} ${H}" role="img" aria-label="Map of the 18 South Miami-Dade ZIP districts. Click any district to open its dashboard view.">
   <defs>
@@ -132,20 +144,76 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.
       <stop offset="0" stop-color="#46a6ff" stop-opacity=".55"/>
       <stop offset="1" stop-color="#2dd4bf" stop-opacity=".50"/>
     </linearGradient>
+    <radialGradient id="oceanGlow" cx="90%" cy="18%" r="70%">
+      <stop offset="0" stop-color="#1a4a6b" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#050a12" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="wildernessMist" cx="10%" cy="55%" r="55%">
+      <stop offset="0" stop-color="#12252a" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#050a12" stop-opacity="0"/>
+    </radialGradient>
     <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
       <feGaussianBlur stdDeviation="3" result="b"/>
       <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
+    <filter id="drop" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="2" result="o"/>
+      <feComponentTransfer><feFuncA type="linear" slope=".55"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
     <style>
-      .zone { fill: url(#fill); stroke: rgba(45,212,191,.55); stroke-width: 1.2; transition: fill .15s, stroke .15s, filter .15s; cursor: pointer; }
+      .backdrop-ocean { fill: url(#oceanGlow); }
+      .backdrop-wild  { fill: url(#wildernessMist); }
+      .zone { fill: url(#fill); stroke: rgba(45,212,191,.55); stroke-width: 1.2; transition: fill .15s, stroke .15s, filter .15s; cursor: pointer; filter: url(#drop); }
       .zone:hover, .zone.hi { fill: url(#fillHover); stroke: rgba(45,212,191,1); filter: url(#glow); }
       a { text-decoration: none; }
       a:focus .zone { outline: none; stroke: #fff; stroke-width: 2; }
-      .zip-lbl { font: 700 12px -apple-system, "Segoe UI", Roboto, sans-serif; fill: #eaf4ff; pointer-events: none; text-anchor: middle; paint-order: stroke; stroke: rgba(7,11,17,.85); stroke-width: 3.5; stroke-linejoin: round; }
+      .zip-lbl { font: 700 12px -apple-system, "Segoe UI", Roboto, sans-serif; fill: #eaf4ff; pointer-events: none; text-anchor: middle; paint-order: stroke; stroke: rgba(7,11,17,.9); stroke-width: 3.5; stroke-linejoin: round; }
+      .udb { fill: none; stroke: #f2b65a; stroke-width: 1.4; stroke-dasharray: 6 4; opacity: .85; pointer-events: none; }
+      .udb-glow { fill: none; stroke: #f2b65a; stroke-width: 6; opacity: .18; filter: blur(2px); pointer-events: none; }
+      .place-lbl { font: italic 400 13px -apple-system, "Segoe UI", Roboto, sans-serif; fill: rgba(159,176,195,.6); pointer-events: none; letter-spacing: 2px; text-transform: uppercase; }
+      .map-legend { pointer-events: none; }
+      .map-legend text { font: 500 11px -apple-system, "Segoe UI", Roboto, sans-serif; fill: rgba(195,206,219,.85); }
+      .map-legend .lg-sw { stroke: #f2b65a; stroke-width: 1.4; stroke-dasharray: 6 4; fill: none; }
+      .compass { pointer-events: none; }
+      .compass .c-ring { fill: none; stroke: rgba(159,176,195,.35); stroke-width: 1; }
+      .compass .c-needle-n { fill: #ff9b9b; }
+      .compass .c-needle-s { fill: rgba(159,176,195,.6); }
+      .compass text { font: 700 10px -apple-system, "Segoe UI", Roboto, sans-serif; fill: rgba(207,230,255,.85); text-anchor: middle; letter-spacing: 1px; }
     </style>
   </defs>
+
+  <!-- atmospheric backdrops -->
+  <rect class="backdrop-ocean" x="0" y="0" width="${W}" height="${H}"/>
+  <rect class="backdrop-wild"  x="0" y="0" width="${W}" height="${H}"/>
+
+  <!-- 'BISCAYNE BAY' whisper (east of the mainland) -->
+  <text class="place-lbl" x="${W - 60}" y="${Math.round(H * .38)}" text-anchor="end">BISCAYNE BAY</text>
+  <text class="place-lbl" x="60" y="${Math.round(H * .55)}" transform="rotate(-90 60 ${Math.round(H * .55)})">EVERGLADES</text>
+
+  <!-- ZIP districts (each clickable) -->
 ${feats.map(f => `  <a href="app.html?zip=${f.zip}" target="_top"><path class="zone" data-zip="${f.zip}" d="${f.d}"><title>ZIP ${f.zip}${f.city ? " · " + f.city : ""} — click for its dashboard view</title></path></a>`).join("\n")}
+
+  <!-- Urban Development Boundary (dashed amber accent + soft glow) -->
+${udbPathD ? `  <path class="udb-glow" d="${udbPathD}"/>\n  <path class="udb" d="${udbPathD}"/>` : ""}
+
+  <!-- ZIP labels -->
 ${feats.filter(f => f.showLabel).map(f => `  <text class="zip-lbl" data-zip="${f.zip}" x="${f.lx.toFixed(1)}" y="${(f.ly + 4).toFixed(1)}">${f.labelText}</text>`).join("\n")}
+
+  <!-- in-map legend (bottom-left) -->
+  <g class="map-legend" transform="translate(24 ${H - 40})">
+    <line class="lg-sw" x1="0" y1="0" x2="34" y2="0"/>
+    <text x="42" y="4">Urban Development Boundary</text>
+  </g>
+
+  <!-- compass (bottom-right) -->
+  <g class="compass" transform="translate(${W - 60} ${H - 68})">
+    <circle class="c-ring" r="26"/>
+    <polygon class="c-needle-n" points="0,-22 5,0 -5,0"/>
+    <polygon class="c-needle-s" points="0,22 5,0 -5,0"/>
+    <text y="-32">N</text>
+  </g>
 </svg>
 `;
 
