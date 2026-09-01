@@ -138,7 +138,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.
     </filter>
     <style>
       .zone { fill: url(#fill); stroke: rgba(45,212,191,.55); stroke-width: 1.2; transition: fill .15s, stroke .15s, filter .15s; cursor: pointer; }
-      .zone:hover { fill: url(#fillHover); stroke: rgba(45,212,191,1); filter: url(#glow); }
+      .zone:hover, .zone.hi { fill: url(#fillHover); stroke: rgba(45,212,191,1); filter: url(#glow); }
       a { text-decoration: none; }
       a:focus .zone { outline: none; stroke: #fff; stroke-width: 2; }
       .zip-lbl { font: 700 12px -apple-system, "Segoe UI", Roboto, sans-serif; fill: #eaf4ff; pointer-events: none; text-anchor: middle; paint-order: stroke; stroke: rgba(7,11,17,.85); stroke-width: 3.5; stroke-linejoin: round; }
