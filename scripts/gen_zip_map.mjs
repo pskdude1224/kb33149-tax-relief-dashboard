@@ -15,12 +15,25 @@ import { dirname, join } from "node:path";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const src = JSON.parse(readFileSync(join(ROOT, "data", "raw", "zips_esri.json"), "utf8"));
 
-// ---- projection: aspect-correct equirectangular ----
+// ---- projection: aspect-correct equirectangular, cropped to the UDB ----
+// Use the ZIP polygons' full extent for east/north/south, but CROP the western
+// bound to just west of the Urban Development Boundary. This drops the empty
+// Everglades tails from the visible map and zooms into where people actually live.
 let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
 for (const f of src.features) for (const ring of f.geometry.rings) for (const [x, y] of ring) {
   if (x < minX) minX = x; if (x > maxX) maxX = x;
   if (y < minY) minY = y; if (y > maxY) maxY = y;
 }
+// Pull UDB early to find its westernmost longitude; if we have it, use it as
+// the map's western crop (a small buffer to the west so the line isn't at the edge).
+let udbMinX = Infinity;
+try {
+  const udbPre = JSON.parse(readFileSync(join(ROOT, "data", "raw", "udb.json"), "utf8"));
+  for (const f of udbPre.features || []) for (const p of (f.geometry || {}).paths || []) for (const [x] of p) {
+    if (x < udbMinX) udbMinX = x;
+  }
+} catch { udbMinX = Infinity; }
+if (isFinite(udbMinX)) minX = Math.max(minX, udbMinX - 0.010); // ~1 km buffer west of the UDB
 const pad = 0.005;
 minX -= pad; maxX += pad; minY -= pad; maxY += pad;
 const midLat = (minY + maxY) / 2;
@@ -54,9 +67,14 @@ function pointInRing(pt, ring) {
   }
   return inside;
 }
-function bestLabelPoint(rings) {
-  // outer ring is largest by absolute area
-  const outer = rings.reduce((a, b) => Math.abs(polygonArea(b)) > Math.abs(polygonArea(a)) ? b : a);
+function bestLabelPoint(rings, minLon = -Infinity) {
+  // Outer ring = largest by |area|. When the map is cropped west of `minLon`,
+  // we consider only the eastern (visible) portion of the polygon so labels
+  // land inside the visible viewBox, not out in the Everglades.
+  const outer0 = rings.reduce((a, b) => Math.abs(polygonArea(b)) > Math.abs(polygonArea(a)) ? b : a);
+  let outer = outer0.filter(([x]) => x >= minLon);
+  if (outer.length < 3) outer = outer0;
+  else if (outer[0][0] !== outer[outer.length - 1][0] || outer[0][1] !== outer[outer.length - 1][1]) outer = outer.concat([outer[0]]);
   const c = polygonCentroid(outer);
   if (isFinite(c[0]) && pointInRing(c, outer)) return c;
   // fallback: sample a grid inside the polygon's bbox, pick point with max distance to edge
@@ -96,7 +114,7 @@ const feats = src.features.map(f => {
   const zip = String(f.attributes.ZIP);
   const outer = f.geometry.rings.reduce((a, b) => Math.abs(polygonArea(b)) > Math.abs(polygonArea(a)) ? b : a);
   const area = Math.abs(polygonArea(outer));
-  const [clon, clat] = bestLabelPoint(f.geometry.rings);
+  const [clon, clat] = bestLabelPoint(f.geometry.rings, minX);
   const [lx, ly] = project(clon, clat);
   const d = f.geometry.rings.map(r => "M" + r.map(([x, y]) => project(x, y).map(v => v.toFixed(2)).join(",")).join(" L") + " Z").join(" ");
   return { zip, area, lx, ly, d, city: CITY[zip] || "" };
