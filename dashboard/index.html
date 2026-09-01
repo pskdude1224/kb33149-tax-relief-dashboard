@@ -135,6 +135,13 @@
   .mapview { padding: 30px 0 20px; text-align: center; }
   .mapview h2 { font-size: 22px; color: #eef3fa; margin: 0 0 6px; letter-spacing: -.2px; font-weight: 700; }
   .mapview-sub { font-size: 13.5px; color: #9fb0c3; margin: 0 auto 20px; max-width: 780px; line-height: 1.5; }
+  .map-modes { display: inline-flex; gap: 4px; background: rgba(255,255,255,.04); border: 1px solid var(--glassline);
+    border-radius: 999px; padding: 4px; margin: 4px auto 14px; }
+  .map-mode { background: transparent; border: 0; color: var(--mut); font-size: 13px; font-weight: 600;
+    padding: 7px 16px; border-radius: 999px; cursor: pointer; transition: background .12s, color .12s; }
+  .map-mode:hover { color: var(--ink); }
+  .map-mode.active { background: linear-gradient(100deg, rgba(70,166,255,.28), rgba(45,212,191,.28));
+    color: #fff; border: 1px solid rgba(45,212,191,.5); }
   .map-and-legend { display: grid; grid-template-columns: 1fr 190px; gap: 18px; align-items: stretch; text-align: left; }
   .map-frame { padding: 14px;
     background: linear-gradient(180deg, rgba(30,41,58,.6), rgba(15,21,31,.55));
@@ -263,7 +270,11 @@
 
       <section class="mapview reveal" style="animation-delay:.4s">
         <h2>18 ZIP districts across South Miami-Dade</h2>
-        <div class="mapview-sub">Click any district on the map — or any ZIP in the legend — to open the dashboard filtered to that area.</div>
+        <div class="map-modes" role="tablist">
+          <button class="map-mode active" data-mode="coverage" role="tab" aria-selected="true">Coverage</button>
+          <button class="map-mode" data-mode="revenue" role="tab" aria-selected="false">Revenue at stake</button>
+        </div>
+        <div class="mapview-sub" id="mapModeSub">Click any district on the map — or any city in the legend — to open the dashboard filtered to that area.</div>
         <div class="map-and-legend">
           <div class="map-frame">
             <object type="image/svg+xml" data="zips_map.svg" aria-label="Map of the 18 South Miami-Dade ZIP codes"></object>
@@ -343,23 +354,72 @@
   </div>
 
   <script>
-    // Hover a legend item -> highlight the matching district in the SVG map.
-    (function wireLegendHover() {
+    // Wire legend-hover-highlight + map-mode toggle ("Coverage" / "Revenue at stake").
+    (function wireMap() {
       const items = document.querySelectorAll(".legend-item");
+      const modeBtns = document.querySelectorAll(".map-mode");
+      const subEl = document.getElementById("mapModeSub");
       const obj = document.querySelector(".map-frame object");
-      if (!obj || items.length === 0) return;
+      if (!obj) return;
       const zipOf = (a) => { try { return new URL(a.href).searchParams.get("zip"); } catch { return null; } };
+      const fmtM = (n) => "$" + (n / 1e6).toFixed(n < 1e7 ? 1 : 0) + "M";
+      const COPY = {
+        coverage: "Click any district on the map — or any city in the legend — to open the dashboard filtered to that area.",
+        revenue:  "Each district shaded by its estimated non-school local revenue loss under the 2028+ $250K homestead exemption. Darker = more at stake. Click for full detail.",
+      };
+      let currentMode = "coverage";
+
       const setHi = (zip, on) => {
         const doc = obj.contentDocument; if (!doc) return;
         doc.querySelectorAll('.zone[data-zip="' + zip + '"]').forEach(el => el.classList.toggle("hi", on));
       };
-      const wire = () => items.forEach(a => {
-        const z = zipOf(a); if (!z) return;
-        a.addEventListener("mouseenter", () => setHi(z, true));
-        a.addEventListener("mouseleave", () => setHi(z, false));
-      });
+      const applyMode = (mode) => {
+        currentMode = mode;
+        const doc = obj.contentDocument; if (!doc) return;
+        const S = window.__SUMMARY__;
+        const byZip = S && S.by_zip;
+        subEl.textContent = COPY[mode];
+        modeBtns.forEach(b => { const on = b.dataset.mode === mode; b.classList.toggle("active", on); b.setAttribute("aria-selected", on); });
+
+        const zones = doc.querySelectorAll(".zone");
+        const labels = doc.querySelectorAll(".zip-lbl");
+        if (mode === "coverage" || !byZip) {
+          zones.forEach(el => { el.style.fill = ""; });
+          labels.forEach(el => { el.textContent = el.dataset.zip || el.textContent; });
+          return;
+        }
+        // revenue mode — compute a shared max for the heat scale
+        const losses = Object.values(byZip).map(z => (z.scenarios && z.scenarios.y2028 && z.scenarios.y2028.revenue_lost) || 0);
+        const maxLoss = Math.max(1, ...losses);
+        zones.forEach(el => {
+          const zip = el.dataset.zip;
+          const z = byZip[zip]; if (!z) { el.style.fill = ""; return; }
+          const loss = (z.scenarios && z.scenarios.y2028 && z.scenarios.y2028.revenue_lost) || 0;
+          const t = Math.min(1, loss / maxLoss);
+          // teal->amber->red heat scale
+          const r = Math.round(70 + t * 185), g = Math.round(212 - t * 130), b = Math.round(191 - t * 140);
+          const a = 0.22 + t * 0.55;
+          el.style.fill = `rgba(${r},${g},${b},${a})`;
+        });
+        labels.forEach(el => {
+          const zip = el.dataset.zip; if (!zip) return;
+          const z = byZip[zip];
+          const loss = z && z.scenarios && z.scenarios.y2028 && z.scenarios.y2028.revenue_lost;
+          el.textContent = loss ? fmtM(loss) : zip;
+        });
+      };
+
+      const wire = () => {
+        items.forEach(a => {
+          const z = zipOf(a); if (!z) return;
+          a.addEventListener("mouseenter", () => setHi(z, true));
+          a.addEventListener("mouseleave", () => setHi(z, false));
+        });
+        applyMode(currentMode);
+      };
       if (obj.contentDocument && obj.contentDocument.readyState === "complete") wire();
       obj.addEventListener("load", wire);
+      modeBtns.forEach(b => b.addEventListener("click", () => applyMode(b.dataset.mode)));
     })();
   </script>
   <script src="summary.js"></script>

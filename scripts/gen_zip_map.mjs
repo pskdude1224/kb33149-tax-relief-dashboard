@@ -145,7 +145,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.
     </style>
   </defs>
 ${feats.map(f => `  <a href="app.html?zip=${f.zip}" target="_top"><path class="zone" data-zip="${f.zip}" d="${f.d}"><title>ZIP ${f.zip}${f.city ? " · " + f.city : ""} — click for its dashboard view</title></path></a>`).join("\n")}
-${feats.filter(f => f.showLabel).map(f => `  <text class="zip-lbl" x="${f.lx.toFixed(1)}" y="${(f.ly + 4).toFixed(1)}">${f.labelText}</text>`).join("\n")}
+${feats.filter(f => f.showLabel).map(f => `  <text class="zip-lbl" data-zip="${f.zip}" x="${f.lx.toFixed(1)}" y="${(f.ly + 4).toFixed(1)}">${f.labelText}</text>`).join("\n")}
 </svg>
 `;
 
