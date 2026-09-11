@@ -618,7 +618,9 @@
         OVERLAYS.forEach(({ id, cls }) => {
           const cb = document.getElementById(id);
           const g = doc.querySelector("." + cls);
-          if (cb && g) g.style.display = cb.checked ? "" : "none";
+          if (!cb || !g) return;
+          if (cb.checked) g.removeAttribute("style");           // clears the inline display:none from SVG
+          else g.setAttribute("style", "display:none");
         });
       };
       OVERLAYS.forEach(({ id }) => {
@@ -626,6 +628,10 @@
         if (cb) cb.addEventListener("change", applyOverlays);
       });
       obj.addEventListener("load", applyOverlays);
+      // Failsafe: if the SVG was already cached, its load event may have fired
+      // BEFORE this handler was attached. Try again shortly after; noop if unnecessary.
+      setTimeout(applyOverlays, 400);
+      setTimeout(applyOverlays, 1200);
     })();
   </script>
   <script src="summary.js"></script>
