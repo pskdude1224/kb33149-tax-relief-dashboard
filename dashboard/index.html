@@ -160,6 +160,13 @@
   .overlay-toggle input:checked + .ot-sw { background: linear-gradient(100deg, rgba(178,132,230,.9), rgba(120,90,200,.9)); }
   .overlay-toggle input:checked + .ot-sw::after { transform: translateX(14px); background: #fff; }
   .overlay-toggle input:focus-visible + .ot-sw { box-shadow: 0 0 0 3px rgba(178,132,230,.35); }
+  .overlay-toggles { display: inline-flex; gap: 8px; flex-wrap: wrap; }
+  /* Color-coded per legislative body */
+  .ot-cong:hover { border-color: rgba(178,132,230,.5); background: rgba(178,132,230,.06); }
+  .ot-senate:hover { border-color: rgba(89,211,211,.55); background: rgba(89,211,211,.07); }
+  .ot-house:hover { border-color: rgba(232,143,191,.55); background: rgba(232,143,191,.07); }
+  .ot-senate input:checked + .ot-sw { background: linear-gradient(100deg, rgba(89,211,211,.95), rgba(70,166,255,.9)); }
+  .ot-house input:checked + .ot-sw { background: linear-gradient(100deg, rgba(232,143,191,.95), rgba(200,120,180,.9)); }
   .map-mode { background: transparent; border: 0; color: var(--mut); font-size: 13px; font-weight: 600;
     padding: 7px 16px; border-radius: 999px; cursor: pointer; transition: background .12s, color .12s; }
   .map-mode:hover { color: var(--ink); }
@@ -331,11 +338,23 @@
             <button class="map-mode" data-mode="revenue" role="tab" aria-selected="false">Revenue at stake</button>
             <button class="map-mode" data-mode="municipality" role="tab" aria-selected="false">By municipality</button>
           </div>
-          <label class="overlay-toggle" title="Overlay U.S. congressional districts (federal — informational only, doesn't change the numbers)">
-            <input type="checkbox" id="congressToggle">
-            <span class="ot-sw"></span>
-            <span class="ot-lbl">Show congressional districts</span>
-          </label>
+          <div class="overlay-toggles">
+            <label class="overlay-toggle ot-cong" title="U.S. Congressional districts (federal — informational only)">
+              <input type="checkbox" id="congressToggle">
+              <span class="ot-sw"></span>
+              <span class="ot-lbl">Congress</span>
+            </label>
+            <label class="overlay-toggle ot-senate" title="Florida State Senate districts — legislators who put Amendment 3 on your ballot">
+              <input type="checkbox" id="senateToggle">
+              <span class="ot-sw"></span>
+              <span class="ot-lbl">FL Senate</span>
+            </label>
+            <label class="overlay-toggle ot-house" title="Florida State House districts — legislators who put Amendment 3 on your ballot">
+              <input type="checkbox" id="houseToggle">
+              <span class="ot-sw"></span>
+              <span class="ot-lbl">FL House</span>
+            </label>
+          </div>
         </div>
         <div class="mapview-sub" id="mapModeSub">Click any district on the map — or any city in the legend — to open the dashboard filtered to that area.</div>
         <div class="map-and-legend">
@@ -588,17 +607,25 @@
       obj.addEventListener("load", wire);
       modeBtns.forEach(b => b.addEventListener("click", () => applyMode(b.dataset.mode)));
 
-      // Congressional overlay toggle (informational — doesn't affect model math)
-      const congressToggle = document.getElementById("congressToggle");
-      const applyCongress = () => {
-        const doc = obj.contentDocument; if (!doc || !congressToggle) return;
-        const g = doc.querySelector(".congress"); if (!g) return;
-        g.style.display = congressToggle.checked ? "" : "none";
+      // Legislative-district overlay toggles (all informational — don't affect model math)
+      const OVERLAYS = [
+        { id: "congressToggle", cls: "congress" },
+        { id: "senateToggle",   cls: "senate"   },
+        { id: "houseToggle",    cls: "house"    },
+      ];
+      const applyOverlays = () => {
+        const doc = obj.contentDocument; if (!doc) return;
+        OVERLAYS.forEach(({ id, cls }) => {
+          const cb = document.getElementById(id);
+          const g = doc.querySelector("." + cls);
+          if (cb && g) g.style.display = cb.checked ? "" : "none";
+        });
       };
-      if (congressToggle) {
-        congressToggle.addEventListener("change", applyCongress);
-        obj.addEventListener("load", applyCongress);
-      }
+      OVERLAYS.forEach(({ id }) => {
+        const cb = document.getElementById(id);
+        if (cb) cb.addEventListener("change", applyOverlays);
+      });
+      obj.addEventListener("load", applyOverlays);
     })();
   </script>
   <script src="summary.js"></script>

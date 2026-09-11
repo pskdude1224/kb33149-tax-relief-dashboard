@@ -164,30 +164,53 @@ try {
   udbPathD = parts.join(" ");
 } catch { /* UDB optional; if missing, skip it */ }
 
-// ---- fetch congressional districts (optional overlay) ----
-let congressSvg = "";
-try {
-  const cong = JSON.parse(readFileSync(join(ROOT, "data", "raw", "fl_congress_smd.json"), "utf8"));
-  const parts = [];
-  for (const f of cong.features || []) {
-    const a = f.attributes || {};
-    const rings = f.geometry?.rings || [];
-    if (!rings.length) continue;
-    const d = rings.map(r => "M" + r.map(([x, y]) => project(x, y).map(v => v.toFixed(1)).join(",")).join(" L") + " Z").join(" ");
-    const [clon, clat] = bestLabelPoint(rings, minX);
-    const [lx, ly] = project(clon, clat);
-    // Only render label if centroid falls inside the map viewBox (else it's off-screen anyway)
-    const inView = lx >= 30 && lx <= W - 30 && ly >= 30 && ly <= H - 30;
+// ---- helper: build an overlay <g> from an Esri feature file ----
+// If a labeler is provided we only draw labels for centroids that fall inside the viewBox.
+function buildOverlay({ path, groupClass, boundaryClass, labelClass, labeler }) {
+  try {
+    const src = JSON.parse(readFileSync(join(ROOT, "data", "raw", path), "utf8"));
+    const parts = [];
+    for (const f of src.features || []) {
+      const rings = f.geometry?.rings || [];
+      if (!rings.length) continue;
+      const d = rings.map(r => "M" + r.map(([x, y]) => project(x, y).map(v => v.toFixed(1)).join(",")).join(" L") + " Z").join(" ");
+      const [clon, clat] = bestLabelPoint(rings, minX);
+      const [lx, ly] = project(clon, clat);
+      const inView = lx >= 30 && lx <= W - 30 && ly >= 30 && ly <= H - 30;
+      parts.push(`    <path class="${boundaryClass}" d="${d}"/>`);
+      if (inView && labeler) {
+        const { text, extraCls = "" } = labeler(f.attributes || {}) || {};
+        if (text) parts.push(`    <text class="${labelClass} ${extraCls}" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}">${text}</text>`);
+      }
+    }
+    return parts.length ? `\n  <g class="${groupClass}" style="display:none">\n${parts.join("\n")}\n  </g>` : "";
+  } catch { return ""; }
+}
+
+// ---- congressional districts (federal) ----
+const congressSvg = buildOverlay({
+  path: "fl_congress_smd.json", groupClass: "congress",
+  boundaryClass: "cong-boundary", labelClass: "cong-lbl",
+  labeler: (a) => {
     const party = (a.PARTY || "").toLowerCase();
     const partyCls = party.startsWith("r") ? "cong-r" : party.startsWith("d") ? "cong-d" : "cong-x";
-    parts.push(`    <path class="cong-boundary" d="${d}"/>`);
-    if (inView) {
-      const label = `FL-${a.CDFIPS} · ${a.LAST_NAME || "(vacant)"}`;
-      parts.push(`    <text class="cong-lbl ${partyCls}" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}">${label}</text>`);
-    }
-  }
-  congressSvg = `\n  <g class="congress" style="display:none">\n${parts.join("\n")}\n  </g>`;
-} catch { /* optional */ }
+    return { text: `FL-${a.CDFIPS} · ${a.LAST_NAME || "(vacant)"}`, extraCls: partyCls };
+  },
+});
+
+// ---- state senate (40 districts) ----
+const senateSvg = buildOverlay({
+  path: "fl_senate.json", groupClass: "senate",
+  boundaryClass: "sd-boundary", labelClass: "sd-lbl",
+  labeler: (a) => ({ text: `SD-${parseInt(a.BASENAME, 10) || a.BASENAME}` }),
+});
+
+// ---- state house (120 districts) ----
+const houseSvg = buildOverlay({
+  path: "fl_house.json", groupClass: "house",
+  boundaryClass: "hd-boundary", labelClass: "hd-lbl",
+  labeler: (a) => ({ text: `HD-${parseInt(a.BASENAME, 10) || a.BASENAME}` }),
+});
 
 // ---- emit SVG (clickable via wrapping <a target="_top">) ----
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${W} ${H}" role="img" aria-label="Map of the 18 South Miami-Dade ZIP districts. Click any district to open its dashboard view.">
@@ -233,6 +256,14 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.
       .cong-lbl { font: 800 12px -apple-system, "Segoe UI", Roboto, sans-serif; text-anchor: middle;
         paint-order: stroke; stroke: rgba(7,11,17,.95); stroke-width: 4.5; stroke-linejoin: round; pointer-events: none; }
       .cong-r { fill: #ff9b9b; } .cong-d { fill: #7cc8ff; } .cong-x { fill: #eaf4ff; }
+      /* State Senate overlay */
+      .sd-boundary { fill: none; stroke: rgba(89,211,211,.9); stroke-width: 1.7; stroke-dasharray: 8 5; pointer-events: none; }
+      .sd-lbl { font: 800 11px -apple-system, "Segoe UI", Roboto, sans-serif; fill: #a4ecec; text-anchor: middle;
+        paint-order: stroke; stroke: rgba(7,11,17,.95); stroke-width: 4; stroke-linejoin: round; pointer-events: none; }
+      /* State House overlay (smaller districts, thinner strokes) */
+      .hd-boundary { fill: none; stroke: rgba(232,143,191,.8); stroke-width: 1.3; stroke-dasharray: 6 4; pointer-events: none; }
+      .hd-lbl { font: 800 10px -apple-system, "Segoe UI", Roboto, sans-serif; fill: #ffc1dc; text-anchor: middle;
+        paint-order: stroke; stroke: rgba(7,11,17,.95); stroke-width: 3.5; stroke-linejoin: round; pointer-events: none; }
       .place-lbl { font: italic 400 13px -apple-system, "Segoe UI", Roboto, sans-serif; fill: rgba(159,176,195,.6); pointer-events: none; letter-spacing: 2px; text-transform: uppercase; }
       .map-legend { pointer-events: none; }
       .map-legend text { font: 500 11px -apple-system, "Segoe UI", Roboto, sans-serif; fill: rgba(195,206,219,.85); }
@@ -259,7 +290,7 @@ ${feats.map(f => `  <a href="app.html?zip=${f.zip}" target="_top"><path class="z
   <!-- Urban Development Boundary (dashed amber accent + soft glow) -->
 ${udbPathD ? `  <path class="udb-glow" d="${udbPathD}"/>\n  <path class="udb" d="${udbPathD}"/>` : ""}
 
-  <!-- Congressional district overlay (toggled from splash JS) -->${congressSvg}
+  <!-- Legislative district overlays (each toggled independently from splash JS) -->${congressSvg}${senateSvg}${houseSvg}
 
   <!-- ZIP labels -->
 ${feats.filter(f => f.showLabel).map(f => `  <text class="zip-lbl" data-zip="${f.zip}" x="${f.lx.toFixed(1)}" y="${(f.ly + 4).toFixed(1)}">${f.labelText}</text>`).join("\n")}
