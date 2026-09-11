@@ -260,9 +260,9 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.
       .sd-boundary { fill: none; stroke: rgba(178,255,110,.95); stroke-width: 1.9; stroke-dasharray: 8 5; pointer-events: none; }
       .sd-lbl { font: 800 11px -apple-system, "Segoe UI", Roboto, sans-serif; fill: #d6ffb0; text-anchor: middle;
         paint-order: stroke; stroke: rgba(7,11,17,.95); stroke-width: 4; stroke-linejoin: round; pointer-events: none; }
-      /* State House overlay (smaller districts, thinner strokes) */
-      .hd-boundary { fill: none; stroke: rgba(232,143,191,.8); stroke-width: 1.3; stroke-dasharray: 6 4; pointer-events: none; }
-      .hd-lbl { font: 800 10px -apple-system, "Segoe UI", Roboto, sans-serif; fill: #ffc1dc; text-anchor: middle;
+      /* State House overlay (smaller districts, bright yellow — clearly distinct from purple Congress and brown-amber UDB) */
+      .hd-boundary { fill: none; stroke: rgba(255,220,60,.95); stroke-width: 1.5; stroke-dasharray: 3 3; pointer-events: none; }
+      .hd-lbl { font: 800 10px -apple-system, "Segoe UI", Roboto, sans-serif; fill: #fff2a8; text-anchor: middle;
         paint-order: stroke; stroke: rgba(7,11,17,.95); stroke-width: 3.5; stroke-linejoin: round; pointer-events: none; }
       .place-lbl { font: italic 400 13px -apple-system, "Segoe UI", Roboto, sans-serif; fill: rgba(159,176,195,.6); pointer-events: none; letter-spacing: 2px; text-transform: uppercase; }
       .map-legend { pointer-events: none; }
