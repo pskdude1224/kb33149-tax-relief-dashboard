@@ -256,9 +256,9 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.
       .cong-lbl { font: 800 12px -apple-system, "Segoe UI", Roboto, sans-serif; text-anchor: middle;
         paint-order: stroke; stroke: rgba(7,11,17,.95); stroke-width: 4.5; stroke-linejoin: round; pointer-events: none; }
       .cong-r { fill: #ff9b9b; } .cong-d { fill: #7cc8ff; } .cong-x { fill: #eaf4ff; }
-      /* State Senate overlay */
-      .sd-boundary { fill: none; stroke: rgba(89,211,211,.9); stroke-width: 1.7; stroke-dasharray: 8 5; pointer-events: none; }
-      .sd-lbl { font: 800 11px -apple-system, "Segoe UI", Roboto, sans-serif; fill: #a4ecec; text-anchor: middle;
+      /* State Senate overlay (bright lime — pops off the teal/blue map bg) */
+      .sd-boundary { fill: none; stroke: rgba(178,255,110,.95); stroke-width: 1.9; stroke-dasharray: 8 5; pointer-events: none; }
+      .sd-lbl { font: 800 11px -apple-system, "Segoe UI", Roboto, sans-serif; fill: #d6ffb0; text-anchor: middle;
         paint-order: stroke; stroke: rgba(7,11,17,.95); stroke-width: 4; stroke-linejoin: round; pointer-events: none; }
       /* State House overlay (smaller districts, thinner strokes) */
       .hd-boundary { fill: none; stroke: rgba(232,143,191,.8); stroke-width: 1.3; stroke-dasharray: 6 4; pointer-events: none; }
