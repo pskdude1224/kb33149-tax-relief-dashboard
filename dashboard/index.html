@@ -144,8 +144,22 @@
   .map-tt b { color: #fff; }
   .map-tt .tt-sub { color: var(--mut); font-size: 12px; }
 
+  .map-controls { display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; margin: 4px auto 14px; }
   .map-modes { display: inline-flex; gap: 4px; background: rgba(255,255,255,.04); border: 1px solid var(--glassline);
-    border-radius: 999px; padding: 4px; margin: 4px auto 14px; }
+    border-radius: 999px; padding: 4px; }
+  /* Congressional overlay toggle switch (independent of mode) */
+  .overlay-toggle { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;
+    padding: 7px 14px 7px 10px; border-radius: 999px; background: rgba(255,255,255,.03);
+    border: 1px solid var(--glassline); color: var(--mut); font-size: 13px; transition: color .12s, border-color .12s, background .12s; }
+  .overlay-toggle:hover { color: var(--ink); border-color: rgba(178,132,230,.5); background: rgba(178,132,230,.06); }
+  .overlay-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+  .ot-sw { width: 30px; height: 16px; border-radius: 999px; background: rgba(255,255,255,.1);
+    position: relative; transition: background .15s; flex: none; }
+  .ot-sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%;
+    background: #cfe6ff; transition: transform .18s, background .15s; }
+  .overlay-toggle input:checked + .ot-sw { background: linear-gradient(100deg, rgba(178,132,230,.9), rgba(120,90,200,.9)); }
+  .overlay-toggle input:checked + .ot-sw::after { transform: translateX(14px); background: #fff; }
+  .overlay-toggle input:focus-visible + .ot-sw { box-shadow: 0 0 0 3px rgba(178,132,230,.35); }
   .map-mode { background: transparent; border: 0; color: var(--mut); font-size: 13px; font-weight: 600;
     padding: 7px 16px; border-radius: 999px; cursor: pointer; transition: background .12s, color .12s; }
   .map-mode:hover { color: var(--ink); }
@@ -311,10 +325,17 @@
 
       <section class="mapview reveal" style="animation-delay:.4s">
         <h2>29 ZIP districts across South Miami-Dade</h2>
-        <div class="map-modes" role="tablist">
-          <button class="map-mode active" data-mode="coverage" role="tab" aria-selected="true">Coverage</button>
-          <button class="map-mode" data-mode="revenue" role="tab" aria-selected="false">Revenue at stake</button>
-          <button class="map-mode" data-mode="municipality" role="tab" aria-selected="false">By municipality</button>
+        <div class="map-controls">
+          <div class="map-modes" role="tablist">
+            <button class="map-mode active" data-mode="coverage" role="tab" aria-selected="true">Coverage</button>
+            <button class="map-mode" data-mode="revenue" role="tab" aria-selected="false">Revenue at stake</button>
+            <button class="map-mode" data-mode="municipality" role="tab" aria-selected="false">By municipality</button>
+          </div>
+          <label class="overlay-toggle" title="Overlay U.S. congressional districts (federal — informational only, doesn't change the numbers)">
+            <input type="checkbox" id="congressToggle">
+            <span class="ot-sw"></span>
+            <span class="ot-lbl">Show congressional districts</span>
+          </label>
         </div>
         <div class="mapview-sub" id="mapModeSub">Click any district on the map — or any city in the legend — to open the dashboard filtered to that area.</div>
         <div class="map-and-legend">
@@ -566,6 +587,18 @@
       if (obj.contentDocument && obj.contentDocument.readyState === "complete") wire();
       obj.addEventListener("load", wire);
       modeBtns.forEach(b => b.addEventListener("click", () => applyMode(b.dataset.mode)));
+
+      // Congressional overlay toggle (informational — doesn't affect model math)
+      const congressToggle = document.getElementById("congressToggle");
+      const applyCongress = () => {
+        const doc = obj.contentDocument; if (!doc || !congressToggle) return;
+        const g = doc.querySelector(".congress"); if (!g) return;
+        g.style.display = congressToggle.checked ? "" : "none";
+      };
+      if (congressToggle) {
+        congressToggle.addEventListener("change", applyCongress);
+        obj.addEventListener("load", applyCongress);
+      }
     })();
   </script>
   <script src="summary.js"></script>
