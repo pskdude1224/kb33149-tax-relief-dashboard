@@ -52,8 +52,25 @@
   @media (max-width: 640px) { .container { padding: 0 20px; } }
 
   nav { padding: 22px 0 20px; }
-  .nav-row-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
-  .regions { display: flex; gap: 6px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .nav-row-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+  /* Collapsible regions — closed by default so the hero isn't pushed down on load */
+  .regions-collapse { margin-top: 4px; }
+  .regions-collapse > summary { list-style: none; cursor: pointer; width: fit-content;
+    display: inline-flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,.035); border: 1px solid rgba(45,212,191,.28);
+    color: #cfe6ff; padding: 7px 15px; border-radius: 999px; font-size: 13px; font-weight: 700;
+    letter-spacing: .1px; transition: border-color .15s, color .15s, background .15s, box-shadow .15s; }
+  .regions-collapse > summary::-webkit-details-marker { display: none; }
+  .regions-collapse > summary:hover { border-color: rgba(45,212,191,.7); color: #fff;
+    background: rgba(45,212,191,.09); box-shadow: 0 2px 14px rgba(45,212,191,.18); }
+  .regions-collapse > summary .ct { font-size: 10.5px; color: #9fb0c3; background: rgba(255,255,255,.06);
+    border-radius: 999px; padding: 2px 7px; font-weight: 700; letter-spacing: .3px; }
+  .regions-collapse > summary .chev { font-size: 11px; opacity: .75; transition: transform .18s ease; display: inline-block; }
+  .regions-collapse[open] > summary { border-color: rgba(45,212,191,.65); color: #fff; background: rgba(45,212,191,.07); }
+  .regions-collapse[open] > summary .chev { transform: rotate(180deg); }
+  .regions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 10px;
+    animation: regionsFade .22s ease-out; }
+  @keyframes regionsFade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
   .rpill { display: inline-flex; align-items: center; gap: 6px;
     background: rgba(255,255,255,.035); border: 1px solid rgba(45,212,191,.28);
     color: #cfe6ff; padding: 6px 13px; border-radius: 999px; font-size: 13px; font-weight: 600;
@@ -62,8 +79,6 @@
   .rpill:hover { border-color: rgba(45,212,191,.75); color: #fff; background: rgba(45,212,191,.09); }
   .rpill .ct { font-size: 10.5px; color: #9fb0c3; background: rgba(255,255,255,.06);
     border-radius: 999px; padding: 1px 6px; font-weight: 700; }
-  /* narrower viewports: let the regions row wrap and align left */
-  @media (max-width: 1000px) { .regions { justify-content: flex-start; } }
   /* "Open dashboard" CTA */
   .nav-cta { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; flex: none;
     background: linear-gradient(100deg, #46a6ff, #2dd4bf 60%, #59d39a); color: #04121d;
@@ -281,19 +296,24 @@
           <span class="eyebrow"><span class="pulse"></span> Florida Amendment 3 · November 2026</span>
           <a class="nav-cta" href="app.html">Open dashboard <span class="arr">→</span></a>
         </div>
-        <div class="regions" aria-label="Coverage: 12 regions across 29 South Miami-Dade ZIP codes">
-          <a class="rpill" href="app.html?zip=33131" title="ZIPs 33131, 33132">Downtown / Brickell <span class="ct">2</span></a>
-          <a class="rpill" href="app.html?zip=33130" title="ZIPs 33125, 33130, 33135">Little Havana <span class="ct">3</span></a>
-          <a class="rpill" href="app.html?zip=33133" title="ZIPs 33129, 33133">Coconut Grove <span class="ct">2</span></a>
-          <a class="rpill" href="app.html?zip=33146" title="ZIPs 33143, 33146, 33134">Coral Gables</a>
-          <a class="rpill" href="app.html?zip=33149" title="ZIP 33149">Key Biscayne</a>
-          <a class="rpill" href="app.html?zip=33156" title="ZIP 33156">Pinecrest</a>
-          <a class="rpill" href="app.html?zip=33176" title="ZIPs 33176, 33186, 33196">Kendall <span class="ct">3</span></a>
-          <a class="rpill" href="app.html?zip=33158" title="ZIPs 33157, 33158">Palmetto Bay <span class="ct">2</span></a>
-          <a class="rpill" href="app.html?zip=33189" title="ZIPs 33189, 33190">Cutler Bay <span class="ct">2</span></a>
-          <a class="rpill" href="app.html?zip=33170" title="ZIP 33170">Redland</a>
-          <a class="rpill" href="app.html?zip=33030" title="ZIPs 33030, 33032–33035, 33039">Homestead <span class="ct">6</span></a>
-        </div>
+        <details class="regions-collapse">
+          <summary aria-label="Browse 11 regions across 29 South Miami-Dade ZIP codes">
+            Browse regions <span class="ct">11 · 29 ZIPs</span><span class="chev" aria-hidden="true">▾</span>
+          </summary>
+          <div class="regions">
+            <a class="rpill" href="app.html?zip=33131" title="ZIPs 33131, 33132">Downtown / Brickell <span class="ct">2</span></a>
+            <a class="rpill" href="app.html?zip=33130" title="ZIPs 33125, 33130, 33135">Little Havana <span class="ct">3</span></a>
+            <a class="rpill" href="app.html?zip=33133" title="ZIPs 33129, 33133">Coconut Grove <span class="ct">2</span></a>
+            <a class="rpill" href="app.html?zip=33146" title="ZIPs 33143, 33146, 33134">Coral Gables</a>
+            <a class="rpill" href="app.html?zip=33149" title="ZIP 33149">Key Biscayne</a>
+            <a class="rpill" href="app.html?zip=33156" title="ZIP 33156">Pinecrest</a>
+            <a class="rpill" href="app.html?zip=33176" title="ZIPs 33176, 33186, 33196">Kendall <span class="ct">3</span></a>
+            <a class="rpill" href="app.html?zip=33158" title="ZIPs 33157, 33158">Palmetto Bay <span class="ct">2</span></a>
+            <a class="rpill" href="app.html?zip=33189" title="ZIPs 33189, 33190">Cutler Bay <span class="ct">2</span></a>
+            <a class="rpill" href="app.html?zip=33170" title="ZIP 33170">Redland</a>
+            <a class="rpill" href="app.html?zip=33030" title="ZIPs 33030, 33032–33035, 33039">Homestead <span class="ct">6</span></a>
+          </div>
+        </details>
       </nav>
 
       <section class="hero">
