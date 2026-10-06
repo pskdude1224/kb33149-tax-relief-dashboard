@@ -97,10 +97,21 @@
   .chip:hover { border-color: var(--accent); color: var(--ink); }
   .chip.on { background: linear-gradient(100deg, rgba(70,166,255,.22), rgba(45,212,191,.22)); border-color: rgba(45,212,191,.6); color: var(--ink); }
   .scn-name { font-size: 13px; color: var(--amber); margin-top: 9px; min-height: 18px; }
-  /* ZIP multi-select bar (full width, above the controls row) */
+  /* ZIP multi-select bar (collapsible — closed by default to save ~160px) */
   .zipbar { margin-top: 18px; padding: 14px 16px; background: var(--glass);
     border: 1px solid var(--glassline); border-radius: 14px;
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .zipbar > summary { list-style: none; cursor: pointer;
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    transition: color .15s; }
+  .zipbar > summary::-webkit-details-marker { display: none; }
+  .zipbar > summary:hover .zipbar-lbl { color: var(--ink); }
+  .zipbar[open] > summary { margin-bottom: 12px; }
+  .zipbar .zb-chev { display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 999px; border: 1px solid var(--line);
+    color: var(--mut); font-size: 11px; transition: transform .18s ease, border-color .15s, color .15s, background .15s; }
+  .zipbar > summary:hover .zb-chev { color: var(--ink); border-color: rgba(70,166,255,.5); background: rgba(70,166,255,.07); }
+  .zipbar[open] > summary .zb-chev { transform: rotate(180deg); color: var(--teal); border-color: rgba(45,212,191,.55); }
   .zipbar-row { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; flex-wrap: wrap; }
   .zipbar-lbl { font-size: 12px; color: var(--mut); text-transform: uppercase; letter-spacing: .5px; font-weight: 700; }
   .zipbar-info { color: var(--mut2); font-size: 12px; }
@@ -108,7 +119,15 @@
   .zipbar-actions button { background: transparent; border: 1px solid var(--line); color: var(--mut);
     border-radius: 7px; padding: 4px 11px; font-size: 12px; cursor: pointer; }
   .zipbar-actions button:hover { color: var(--ink); border-color: rgba(70,166,255,.5); }
-  .zips { display: flex; gap: 7px; flex-wrap: wrap; }
+  .zipbar-collapse { margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+    background: transparent; border: 1px solid var(--line); color: var(--mut);
+    border-radius: 7px; padding: 4px 11px; font-size: 12px; font-weight: 600;
+    transition: color .15s, border-color .15s, background .15s; }
+  .zipbar-collapse:hover { color: var(--ink); border-color: rgba(70,166,255,.5); background: rgba(70,166,255,.05); }
+  .zipbar-collapse .chev { font-size: 10px; opacity: .9; display: inline-block; transform: rotate(180deg); }
+  .zips { display: flex; gap: 7px; flex-wrap: wrap;
+    animation: zipsFade .22s ease-out; }
+  @keyframes zipsFade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
   .zips label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
     background: var(--panel2); border: 1px solid var(--line); border-radius: 999px;
     padding: 6px 12px; font-size: 13px; color: var(--mut); user-select: none; }
@@ -263,18 +282,22 @@
     <a class="navlink" href="./">← Back to intro</a>
   </nav>
 
-  <!-- ZIP PICKER (top of page) -->
-  <section class="zipbar">
-    <div class="zipbar-row">
+  <!-- ZIP PICKER (collapsible — closed by default so Find-your-home + controls sit higher) -->
+  <details class="zipbar" id="zipbarDetails">
+    <summary aria-label="Expand ZIP code picker">
+      <span class="zb-chev" aria-hidden="true">▾</span>
       <span class="zipbar-lbl">ZIP codes covered</span>
       <span class="zipbar-info" id="zipCountLabel"></span>
       <div class="zipbar-actions">
         <button id="zipAll" type="button">Select all</button>
         <button id="zipNone" type="button">Clear</button>
       </div>
-    </div>
+    </summary>
     <div class="zips" id="zipPicker"></div>
-  </section>
+    <button type="button" class="zipbar-collapse" data-zipbar-close aria-label="Collapse ZIP picker">
+      Collapse <span class="chev" aria-hidden="true">▾</span>
+    </button>
+  </details>
 
   <header>
     <span class="eyebrow"><span class="pulse"></span> Florida ballot measure · November 2026</span>
@@ -768,8 +791,24 @@ function syncBrandChip() {
   el.textContent = zs.length === total ? "· South Miami-Dade" : (zs.length <= 3 ? "· ZIP " + zs.join(" + ") : `· ${zs.length} ZIPs`);
 }
 document.getElementById("geo").onchange = e => { st.geo = e.target.value; st.page = 0; render(); };
-document.getElementById("zipAll").onclick = () => setAllZips(true);
-document.getElementById("zipNone").onclick = () => setAllZips(false);
+// Select-all / Clear live inside <summary>; stop the click from toggling <details>.
+document.getElementById("zipAll").addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); setAllZips(true); });
+document.getElementById("zipNone").addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); setAllZips(false); });
+
+// ZIP picker: outside-click + Esc + explicit Collapse chip all close the <details>.
+(function wireZipbarCollapse() {
+  const det = document.getElementById("zipbarDetails");
+  if (!det) return;
+  const close = () => { if (det.open) det.open = false; };
+  det.querySelectorAll("[data-zipbar-close]").forEach(btn =>
+    btn.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); close(); }));
+  document.addEventListener("click", (e) => {
+    if (!det.open) return;
+    if (det.contains(e.target)) return;
+    close();
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+})();
 document.getElementById("milRange").oninput = e => { st.millage = +e.target.value; document.getElementById("milNum").value = st.millage; syncMil(); render(); };
 document.getElementById("milNum").oninput = e => { st.millage = +e.target.value || 0; document.getElementById("milRange").value = st.millage; syncMil(); render(); };
 document.querySelectorAll("[data-mil]").forEach(c => c.onclick = () => {
