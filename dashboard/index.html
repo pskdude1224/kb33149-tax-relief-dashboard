@@ -79,6 +79,13 @@
   .rpill:hover { border-color: rgba(45,212,191,.75); color: #fff; background: rgba(45,212,191,.09); }
   .rpill .ct { font-size: 10.5px; color: #9fb0c3; background: rgba(255,255,255,.06);
     border-radius: 999px; padding: 1px 6px; font-weight: 700; }
+  /* Trailing collapse chip (visible when expanded) */
+  .rpill-collapse { display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+    background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.14);
+    color: #9fb0c3; padding: 6px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 700;
+    letter-spacing: .2px; margin-left: auto; transition: border-color .15s, color .15s, background .15s; }
+  .rpill-collapse:hover { border-color: rgba(255,255,255,.35); color: #fff; background: rgba(255,255,255,.06); }
+  .rpill-collapse .chev { font-size: 11px; opacity: .85; display: inline-block; transform: rotate(180deg); }
   /* "Open dashboard" CTA */
   .nav-cta { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; flex: none;
     background: linear-gradient(100deg, #46a6ff, #2dd4bf 60%, #59d39a); color: #04121d;
@@ -312,6 +319,9 @@
             <a class="rpill" href="app.html?zip=33189" title="ZIPs 33189, 33190">Cutler Bay <span class="ct">2</span></a>
             <a class="rpill" href="app.html?zip=33170" title="ZIP 33170">Redland</a>
             <a class="rpill" href="app.html?zip=33030" title="ZIPs 33030, 33032–33035, 33039">Homestead <span class="ct">6</span></a>
+            <button type="button" class="rpill-collapse" data-regions-close aria-label="Collapse regions">
+              Collapse <span class="chev" aria-hidden="true">▾</span>
+            </button>
           </div>
         </details>
       </nav>
@@ -496,6 +506,24 @@
   </div>
 
   <script>
+    // Wire regions <details>: outside-click + Escape + explicit Collapse button all close it.
+    (function wireRegionsCollapse() {
+      const det = document.querySelector(".regions-collapse");
+      if (!det) return;
+      const close = () => { if (det.open) det.open = false; };
+      // Explicit "Collapse ▴" chip inside the expanded row
+      det.querySelectorAll("[data-regions-close]").forEach(btn =>
+        btn.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); close(); }));
+      // Click anywhere outside the <details> closes it
+      document.addEventListener("click", (e) => {
+        if (!det.open) return;
+        if (det.contains(e.target)) return; // clicks inside (incl. summary) handled natively
+        close();
+      });
+      // Esc closes too
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+    })();
+
     // Wire legend-hover-highlight + map-mode toggle + on-map hover tooltip.
     (function wireMap() {
       const items = document.querySelectorAll(".legend-item");
